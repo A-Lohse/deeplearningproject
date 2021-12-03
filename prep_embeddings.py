@@ -2,31 +2,37 @@
 This script is used to prepare the data from the paper 
 "BillSum: A Corpus for Automatic Summarization of US Legislation"
 See the original code repository at: https://github.com/FiscalNote/BillSum
+and the specific required files from:
+
 """
 
 #imports
 import pickle
-import bz2
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from typing import List
 import torch
 from sentence_transformers import SentenceTransformer
-print(torch.cuda.is_available())
 
+#verify if CUDA is available
+print(f'Running CUDA on GPU: {torch.cuda.is_available()}')
 #set path to raw data
-raw_train_path = '/data/raw/us_train_sent_scores.pkl'
-raw_test_path = '/data/raw/us_test_sent_scores.pkl'
+raw_train_path = 'data/raw/us_train_sent_scores.pkl'
+raw_test_path = 'data/raw/us_test_sent_scores.pkl'
 #set path to dump processed data
-processed_path = '/data/processed/'
+processed_path = 'data/processed/'
 #Load the SentenceTransformer model
-print('Loading SentenceTransformer model...')
+print('Loading Sentence Transformer model...')
 sBERT = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
 
 def read_bills(path:str):
     """
     This function is used to get the bill id from the file name.
+    input:
+        path(str): path to the file
+    returns:
+        data(pandas.DataFrame): DataFrame with bill id and sentences
     """
     sent_data = pickle.load(open(path, 'rb'))
     doc_order = sorted(sent_data.keys())
@@ -37,7 +43,7 @@ def read_bills(path:str):
             y = int(sent[2]['rouge-2']['p'] > 0.1)
             # Our label 
             bills.append([sent[0], y, key])
-    return pd.DataFrame(bills, columns=['sentence', 'label', 'bill_id'])
+    return pd.DataFrame(bills, columns=['sentence', 'real_text', 'bill_id'])
 
 
 def docsents_embeddings(model:SentenceTransformer, docs:List[list],
@@ -58,7 +64,7 @@ def docsents_embeddings(model:SentenceTransformer, docs:List[list],
     for i, doc in enumerate(tqdm(docs)):
         for j, sent in enumerate(doc):
             embedding = model.encode(sent)
-            DM[i,j :] = embedding
+            DM[i,j,:] = embedding
     return DM
 
 def main():
@@ -66,8 +72,10 @@ def main():
     train_dat = read_bills(raw_train_path)
     test_dat = read_bills(raw_test_path)
     #Subset on "real text" and group sentences by BILL id.
-    train_dat = train_dat.loc[train_dat['real_text']==1].groupby('bill_id')['sentence'].apply(list)
-    test_dat = test_dat.loc[test_dat['real_text']==1].groupby('bill_id')['sentence'].apply(list)
+    train_dat = pd.DataFrame(train_dat.loc[train_dat['real_text']==1]\
+        .groupby('bill_id')['sentence'].apply(list))
+    test_dat = pd.DataFrame(test_dat.loc[test_dat['real_text']==1]\
+        .groupby('bill_id')['sentence'].apply(list))
     ndocs_train = len(train_dat)
     ndocs_test = len(test_dat)
     print(f'There are {ndocs_train} bills in training set')
@@ -85,24 +93,33 @@ def main():
     test_labels = test_dat.index.tolist()
     #Saving the training and test labels
     print(f'Saving the training and test labels to {processed_path}')
-    with open(processed_path + 'train_labels.pickle', 'wb') as f:
-        pickle.dump(train_labels, f)
-    with open(processed_path + 'test_labels.pickle', 'wb') as f:
-        pickle.dump(test_labels, f)
+    trainslabs_fname = processed_path + 'train_labels.pkl'
+    testslabs_fname = processed_path + 'test_labels.pkl'
+    print(f'Saving the training labels to {trainslabs_fname}')
+    print(f'Saving the test labels to {testslabs_fname}')
+    pickle.dump(train_labels, open(trainslabs_fname, 'wb'))
+    pickle.dump(test_labels, open(testslabs_fname, 'wb'))
     #Extract sBERT embeddings for training and test data
     print('Extracting sBERT embeddings for training...')
     train_docs = train_dat['sentence'].tolist()
-    train_embs = docsents_embeddings(sBERT, train_docs, ndocs_train, train_max_sents)
-    train_fname = processed_path + 'train_embs.pkl.bz2'
+    train_embs = docsents_embeddings(sBERT, train_docs, 
+                                     ndocs_train, train_max_sents)
+    train_fname = processed_path + 'train_embs.npy'
     print(f'Saving training embeddings to {train_fname}')
-    pickle.dump(train_embs, bz2.open(train_fname, 'wb'))
+    with open(train_fname, 'wb') as f:
+        np.save(f, train_embs)
     print('Extracting sBERT embeddings for test...')
     test_docs = test_dat['sentence'].tolist()
-    #Use the same max sentences for training and test to have matching dimensions
-    test_embs = docsents_embeddings(sBERT, test_docs, ndocs_test, train_max_sents)
-    test_fname = processed_path + 'test_embs.pkl.bz2'
+    #Use the same max sentences for training and test 
+    #to have matching dimensions
+    test_embs = docsents_embeddings(sBERT, test_docs, 
+                                    ndocs_test, train_max_sents)
+    test_fname = processed_path + 'test_embs.npy'
     print(f'Saving test embeddings to {test_fname}')
-    pickle.dump(test_embs, bz2.open(test_fname, 'wb'))
+    with open(test_fname, 'wb') as f:
+        np.save(f, test_embs)
     print('FINISHED!')
 
+if __name__ == '__main__':
+    main()
 
