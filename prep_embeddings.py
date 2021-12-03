@@ -2,8 +2,8 @@
 This script is used to prepare the data from the paper 
 "BillSum: A Corpus for Automatic Summarization of US Legislation"
 See the original code repository at: https://github.com/FiscalNote/BillSum
-and the specific required files from:
-
+and the specific required files "us_train_sent_scores.pk" and "us_test_sent_scores.pkl"
+can be downloaded from: https://drive.google.com/file/d/1uBCRSs_KFv7jD6nM4MKXZZ4nZAPI2Go4/view
 """
 
 #imports
