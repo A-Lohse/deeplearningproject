@@ -60,12 +60,11 @@ def docsents_embeddings(model:SentenceTransformer, docs:List[list],
         N_docs x Max_sentences x 384 dimensional np.array with BERT embeddings
         for each document.
     """
-    DM = np.zeros((ndocs, maxsents, 384))
+    emb = np.zeros((ndocs, maxsents, 384))
     for i, doc in enumerate(tqdm(docs)):
         for j, sent in enumerate(doc):
-            embedding = model.encode(sent)
-            DM[i,j,:] = embedding
-    return DM
+            emb[i,j,:] = model.encode(sent)
+    return emb
 
 def main():
     print('Reading raw data...')
