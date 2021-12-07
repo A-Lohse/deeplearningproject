@@ -10,7 +10,7 @@ def straitified_train_validation_split(dataset, labels, val_size=0.2):
     """
     # Get stratified split of data
     train_idx, val_idx = train_test_split(range(labels.shape[0]), 
-            test_size=val_size, random_state=42, stratify=labels)
+            test_size=val_size, random_state=3, stratify=labels)
     train_dataset, train_labels = dataset[train_idx], labels[train_idx]
     val_dataset, val_labels = dataset[val_idx], labels[val_idx]
     return train_dataset, train_labels, val_dataset, val_labels
@@ -33,7 +33,7 @@ def dataloader(dataset, labels, batch_size=32, shuffle=True,
 class Dataset(torch.utils.data.Dataset):
     def __init__(self, data, targets, transform=None):
         self.data = data
-        self.targets = torch.LongTensor(targets)
+        self.targets = targets
         self.transform = transform
         
     def __getitem__(self, index):
