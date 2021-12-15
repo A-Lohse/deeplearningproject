@@ -59,12 +59,16 @@ def loadLocal(path_text: str, path_label: str, file_id_text: str, file_id_label:
     return bert_train, labels_train
 
 
-def import_data_loaders_and_class_weights() -> Union[dataloader, dataloader, torch.tensor]:
+def import_data_loaders_and_class_weights(
+    path_text_directory='./data/bert_train_103-114.pt',
+    path_label_directory='./data/labels_train_103-114.pt',
+    colab_text_file_id='1IZPbb7KEc9fjAItPf1JrPw5Je1Q0woNa',
+    colab_label_file_id='1hvyLUS6e9tI_ICietdKUy4XCwurr6lSU'
+) -> Union[dataloader, dataloader, torch.tensor]:
     """1. Loads training and validation data 
        2. Splits data using stratified validation split
        3. Calculate class weights for loss function
        4. Generate dataloader for a training and validation split
-
 
     Returns:
         Union[dataloader, dataloader, torch.tensor]: [dataloader_training, 
@@ -75,10 +79,10 @@ def import_data_loaders_and_class_weights() -> Union[dataloader, dataloader, tor
         bert_train, labels_train = loadColab('data/processed/bert_train_103-114.pt',
                                              'data/processed/labels_train_103-114.pt')
     else:
-        bert_train, labels_train = loadLocal('./data/bert_train_103-114.pt',
-                                             './data/labels_train_103-114.pt',
-                                             '1IZPbb7KEc9fjAItPf1JrPw5Je1Q0woNa',
-                                             '1hvyLUS6e9tI_ICietdKUy4XCwurr6lSU')
+        bert_train, labels_train = loadLocal(path_text_directory,
+                                             path_label_directory,
+                                             colab_text_file_id,
+                                             colab_label_file_id)
 
     # Stratified split into training and validation
     bert_train, labels_train, bert_val, labels_val = straitified_train_validation_split(bert_train,
