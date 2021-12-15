@@ -1,9 +1,11 @@
 from typing import Union
 import os
+import numpy as np
 import torch
 from google_drive_downloader import GoogleDriveDownloader as gdd
-from data_utils import straitified_train_validation_split, dataloader
 from sklearn.utils.class_weight import compute_class_weight
+
+from data_utils import straitified_train_validation_split, dataloader
 
 
 def identifyIfInstanceOnColab() -> bool:
