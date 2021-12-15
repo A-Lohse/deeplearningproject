@@ -46,7 +46,7 @@ def read_bills(path:str):
     df = pd.DataFrame(bills, columns=['sentences', 'real_text', 'bill_id'])
    
     return pd.DataFrame(df.loc[df['real_text']==1]\
-            .groupby('bill_id')['sentences'].apply(list)).reset_index()
+            .groupby('bill_id')['sentences'].apply(list))
 
 def main():
     print(f'Reading bill text from Billsum data located at {raw_train_path} and {raw_test_path}')
