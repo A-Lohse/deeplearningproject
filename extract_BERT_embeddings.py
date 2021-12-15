@@ -57,11 +57,11 @@ def main():
            - nbills: {nbills}\n\
            - max_sents: {max_sents}\n\
            - emb_size: 384')
-    emb = docsents_embeddings(sBERT, bill_docs, nbills, max_sents)
+    embeddings = docsents_embeddings(sBERT, bill_docs, nbills, max_sents)
     labels = torch.tensor(bert_data['status'], dtype=torch.long)
     #Dump the embeddings and labels
     print(f'Dumping the embeddings and labels as {processed_path}bert_embeddings.pt and {processed_path}bert_labels.pt')
-    torch.save(emb, processed_path + 'bert_embeddings.pt')
+    torch.save(embeddings, processed_path + 'bert_embeddings.pt')
     torch.save(labels, processed_path + 'bert_labels.pt')
     print('FINISHED!')
 
