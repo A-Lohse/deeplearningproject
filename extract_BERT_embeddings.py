@@ -47,6 +47,11 @@ def docsents_embeddings(model:SentenceTransformer, docs:List[list],
 def main():
     print('Reading sBERT data...')
     bert_data = pd.read_pickle(sbert_data_path)
+    print(f"Saving training and test indices to {processed_path + 'train_test_indices.pickle'}")
+    train_test_idx = {'train_idx':bert_data.loc[bert_data['cong'] != 115].index.tolist(),
+                      'test_idx':bert_data.loc[bert_data['cong'] == 115].index.tolist()}
+    with open(processed_path + 'bert_train_test_idx.pickle', 'wb') as f:
+        pickle.dump(train_test_idx, f)
     #Extract the bill documents
     bill_docs = bert_data['sentences'].tolist()
     #Extract the number of bills and max number of sentences 
@@ -59,10 +64,22 @@ def main():
            - emb_size: 384')
     embeddings = docsents_embeddings(sBERT, bill_docs, nbills, max_sents)
     labels = torch.tensor(bert_data['status'], dtype=torch.long)
-    #Dump the embeddings and labels
-    print(f'Dumping the embeddings and labels as {processed_path}bert_embeddings.pt and {processed_path}bert_labels.pt')
-    torch.save(embeddings, processed_path + 'bert_embeddings.pt')
-    torch.save(labels, processed_path + 'bert_labels.pt')
+    print(f'Finished creating embeddings matrix')
+    split = input('Split into training and test set? (y/n): ')
+    if split == 'y':
+        train_embs = embeddings[train_test_idx['train_idx']]
+        test_embs = embeddings[train_test_idx['test_idx']]
+        train_labels = labels[train_test_idx['train_idx']]
+        test_labels = labels[train_test_idx['test_idx']]
+        print(f'Saving training and test embeddings and labels to {processed_path}')
+        torch.save(train_embs, processed_path + 'bert_train_embs.pt')
+        torch.save(test_embs, processed_path + 'bert_test_embs.pt')
+        torch.save(train_labels, processed_path + 'bert_train_labels.pt')
+        torch.save(test_labels, processed_path + 'bert_test_labels.pt')
+    else:
+        print(f'Saving all embeddings and labels to {processed_path}')
+        torch.save(embeddings, processed_path + 'bert_embs.pt')
+        torch.save(labels, processed_path + 'bert_labels.pt')
     print('FINISHED!')
 
 if __name__ == '__main__':
