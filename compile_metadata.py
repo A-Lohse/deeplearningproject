@@ -1,4 +1,3 @@
-from curses import meta
 import pandas as pd
 import numpy as np
 
@@ -31,3 +30,4 @@ newids = metadata_df['bill_id'].tolist()
 print(f'Missing set of ids: {set(all_ids)-set(newids)}')
 metadata_df.to_csv('data/processed/bill_metadata.csv')
 print(f'Saving to data/processed/bill_metadata.csv')
+
