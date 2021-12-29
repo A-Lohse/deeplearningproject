@@ -66,6 +66,16 @@ class BillNet_CNN(pl.LightningModule):
         loss = self.criterion(output, target)
         self.log('val_loss', loss)
         # --------------------------
+    def test_step(self, batch, batch_idx):
+        # --------------------------
+        x_emb, target, x_meta = batch
+        if self.include_meta:
+            output = self(x_emb, x_meta)
+        else:
+            output = self(x_emb)
+        loss = self.criterion(output, target)
+        self.log('test_loss', loss)
+        # --------------------------
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3,
@@ -77,11 +87,8 @@ class BillNet_CNN(pl.LightningModule):
         
 
 class BillNet_FNN(pl.LightningModule):
-    """
-    Implements the FNN based model.
-    """
 
-    def __init__(self,
+    def __init__(self, num_classes:int=2, 
                  avg_emb:bool=False,
                  include_meta:bool=False):
         super().__init__()
@@ -92,7 +99,8 @@ class BillNet_FNN(pl.LightningModule):
         #------#
         self.fc1 = nn.LazyLinear(out_features=256)
         self.fc2 = nn.Linear(256, 128)
-        self.fc3 = nn.Linear(128, 2)
+        self.fc3 = nn.Linear(128, num_classes)
+        #self.fc4 = nn.Linear(64, num_classes)
 
     def forward(self, x_emb, x_meta):
         if self.avg_emb:
@@ -101,6 +109,7 @@ class BillNet_FNN(pl.LightningModule):
             x_emb = torch.squeeze(x_emb)
         else:
             x_emb = torch.flatten(x_emb, 1)
+        
         if self.include_meta:
             x = torch.cat([x_emb, x_meta], dim=1)
         else:
@@ -114,8 +123,7 @@ class BillNet_FNN(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         # --------------------------
-        # REPLACE WITH YOUR OWN
-        x_emb, target, x_meta = batch
+        x_emb, x_meta, target = batch
         if self.include_meta:
             output = self(x_emb.float(), x_meta.float())
         else:
@@ -128,8 +136,7 @@ class BillNet_FNN(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         # --------------------------
-        # REPLACE WITH YOUR OWN
-        x_emb, target, x_meta = batch
+        x_emb, x_meta, target = batch
         if self.include_meta:
             output = self(x_emb.float(), x_meta.float())
         else:
@@ -138,6 +145,16 @@ class BillNet_FNN(pl.LightningModule):
         loss = criterion(output, target)
         self.log('val_loss', loss)
         # --------------------------
+    
+    def test_step(self, batch, batch_idx):
+        x_emb, x_meta, target = batch
+        if self.include_meta:
+            output = self(x_emb.float(), x_meta.float())
+        else:
+            output = self(x_emb.float())
+        criterion = self.criterion()    
+        loss = criterion(output, target)
+        self.log('test_loss', loss)
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3,

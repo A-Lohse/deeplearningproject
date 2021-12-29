@@ -17,11 +17,11 @@ def straitified_train_validation_split(embeddings, meta,targets, val_size=0.2):
     
     return {
             'train':(embeddings[train_idx], 
-                    targets[train_idx], 
-                    meta[train_idx]),
+                    meta[train_idx], 
+                    targets[train_idx]),
             'val': (embeddings[val_idx], 
-                    targets[val_idx], 
-                    meta[val_idx])
+                    meta[val_idx], 
+                    targets[val_idx])
             }
 
 def dataloader(embeddings, meta, targets, batch_size=32,
@@ -46,39 +46,42 @@ class BillNetDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         embedding = self.embeddings[index]
-        target = self.targets[index]
         meta = self.meta[index]
+        target = self.targets[index]
+        
         return embedding, meta, target
     
     def __len__(self):
-        return len(self.data)
+        return self.embeddings.shape[0]
 
 class BillNetDataModule(pl.LightningDataModule):
     """
     
     """
-    def __init__(self, batch_size=32):
+    def __init__(self, batch_size=32,
+                       data_path='data/processed/'):
         super().__init__()
         self.batch_size = batch_size
-    
-    def setup(self, data_path = 'data/processed/'):
+        self.data_path = data_path
+
+    def setup(self):
         #Read tensors for training and val
-        bert_train = torch.load(data_path + 'bert_train_103-114.pt')
-        meta_train = torch.load(data_path + 'meta_train_103-114.pt')
-        targets_train = torch.load(data_path + 'labels_train_103-114.pt')
+        bert_train = torch.load(self.data_path + 'bert_train_103-114.pt')
+        meta_train = torch.load(self.data_path + 'meta_train_103-114.pt')
+        targets_train = torch.load(self.data_path + 'labels_train_103-114.pt')
         # Split training and val
         splits = straitified_train_validation_split(bert_train, meta_train, targets_train)
         self.train, self.val = splits['train'], splits['val']
         # read test
-        self.test = (torch.load(data_path + 'bert_test_115.pt'), 
-                    torch.load(data_path + 'meta_test_115.pt'), 
-                    torch.load(data_path + 'labels_test_115.pt'))
+        self.test = (torch.load(self.data_path + 'bert_test_115.pt'), 
+                    torch.load(self.data_path + 'meta_test_115.pt'), 
+                    torch.load(self.data_path + 'labels_test_115.pt'))
    
     def train_dataloader(self):
-        return dataloader(self.train, batch_size=self.batch_size)
+        return dataloader(*self.train, batch_size=self.batch_size)
 
     def val_dataloader(self):
-        return dataloader(self.val, batch_size=self.batch_size)
+        return dataloader(*self.val, batch_size=self.batch_size)
 
     def test_dataloader(self):
-        return dataloader(self.test, batch_size=self.batch_size)
+        return dataloader(*self.test, batch_size=self.batch_size)
