@@ -85,5 +85,6 @@ def main():
     print("Save model...")
     model.save("data/processed/pretrained_model")
     print("Done")
+
 if __name__ == '__main__':
     main()
