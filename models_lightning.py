@@ -125,7 +125,6 @@ class BillNet_FNN(pl.LightningModule):
         return x
 
     def training_step(self, batch, batch_idx):
-        # --------------------------
         x_emb, x_meta, target = batch
         if self.include_meta:
             output = self(x_emb.float(), x_meta.float())
@@ -135,10 +134,8 @@ class BillNet_FNN(pl.LightningModule):
         loss = criterion(output, target)
         self.log('train_loss', loss)
         return loss
-        # --------------------------
 
     def validation_step(self, batch, batch_idx):
-        # --------------------------
         x_emb, x_meta, target = batch
         if self.include_meta:
             output = self(x_emb.float(), x_meta.float())
@@ -147,7 +144,6 @@ class BillNet_FNN(pl.LightningModule):
         criterion = self.criterion()    
         loss = criterion(output, target)
         self.log('val_loss', loss)
-        # --------------------------
     
     def test_step(self, batch, batch_idx):
         x_emb, x_meta, target = batch
