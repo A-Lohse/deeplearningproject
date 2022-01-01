@@ -7,8 +7,23 @@ from data_utils import BillNetDataModule
 import pandas as pd
 from collections import defaultdict
 import copy 
+#remove experimental warning from lazylayer
 import warnings
 warnings.filterwarnings("ignore")
+
+#-------------#
+# HYPERPARAMS #
+#-------------#
+
+#If random samples or criterion should be weighted
+weighted_sampler = True
+criterion_class_weights = False
+auto_lr = False #Use lightning to find optimal lr
+lr = 0.001
+dropout_rate = 0.2
+monitor_metric = 'val_prauc' #area under the precision-recall curve
+#-----------------#
+
 
 class MetricsCallback(Callback):
     """PyTorch Lightning metric callback."""
@@ -19,7 +34,6 @@ class MetricsCallback(Callback):
     def on_validation_epoch_end(self, trainer, pl_module):
         each_me = copy.deepcopy(trainer.callback_metrics)
         self.metrics.append(each_me)
-
 
 def parse_metrics(metrics:dict)->pd.DataFrame:
     """
@@ -49,30 +63,45 @@ def parse_metrics(metrics:dict)->pd.DataFrame:
 
 def run_models():
     #Set the seed
+    print('Starting to train models')
     pl.seed_everything(1234)
-    #Load data module and extract class weights
-    dm = BillNetDataModule()
+    print('HYPERPARAMS:')
+    print('-'*33)
+    print(f'Dropout rate: {dropout_rate}')
+    print(f'Learning rate: {lr}')
+    print(f'Early stopping monitor metric: {monitor_metric}')
+    print(f'Weighted samples: {weighted_sampler}')
+    print(f'Weighted classes in criterion: {criterion_class_weights}')
+    print('-'*33)
+    #Load and setup data
+    if weighted_sampler:
+        dm = BillNetDataModule(weighted_sampler=True)
+    else:
+        dm = BillNetDataModule(weighted_sampler=False)
     dm.setup()
-    class_weights = dm.weights 
+
+    if criterion_class_weights == True:
+        class_weights = dm.class_weights 
+    else:
+        class_weights = None
     #Define the models to run
     models = {
-              #CNN models
-              'CNN':BillNet_CNN(include_meta=False, 
-                                class_weights=class_weights),
-              'CNN inc. meta':BillNet_CNN(include_meta=True, 
-                                          class_weights=class_weights),
-              #FNN models flattened sentence embeddings
-              'FNN':BillNet_FNN(avg_emb=False, include_meta=False, 
-                                class_weights=class_weights),
-              'FNN inc. meta':BillNet_FNN(avg_emb=False, include_meta=True,
-                                          class_weights=class_weights),
-              #FNN models avg. sentence embeddings
-              'FNN avg':BillNet_FNN(avg_emb=True, include_meta=False,
-                                    class_weights=class_weights),
-              'FNN avg inc. meta':BillNet_FNN(avg_emb=True, include_meta=True,
-                                              class_weights=class_weights)
-              }
- 
+            #CNN models
+            'CNN':BillNet_CNN(include_meta=False, class_weights=class_weights, 
+                             learning_rate=lr, dropout_rate=dropout_rate),
+            'CNN inc. meta':BillNet_CNN(include_meta=True, class_weights=class_weights,
+                                        learning_rate=lr, dropout_rate=dropout_rate),
+            #FNN models flattened sentence embeddings
+            'FNN':BillNet_FNN(avg_emb=False, include_meta=False, class_weights=class_weights,
+                              learning_rate=lr, dropout_rate=dropout_rate),
+            'FNN inc. meta':BillNet_FNN(avg_emb=False, include_meta=True, class_weights=class_weights,
+                                        learning_rate=lr, dropout_rate=dropout_rate),
+            #FNN models avg. sentence embeddings
+            'FNN avg':BillNet_FNN(avg_emb=True, include_meta=False, class_weights=class_weights,
+                                  learning_rate=lr, dropout_rate=dropout_rate),
+            'FNN avg inc. meta':BillNet_FNN(avg_emb=True, include_meta=True, class_weights=class_weights,
+                                            learning_rate=lr, dropout_rate=dropout_rate)
+            }
     #-------------------------#
     #train and test the models#
     #-------------------------#
@@ -83,22 +112,31 @@ def run_models():
         print(f'Training: {model_name}')
         print('-'*66)
         metrics_cb = MetricsCallback()
-        checkpoint_cb = ModelCheckpoint(monitor='val_prauc',
+        checkpoint_cb = ModelCheckpoint(monitor=monitor_metric,
                                         mode='max',
                                         save_top_k=1,
                                         dirpath='trained_models/',
                                         filename=model_name+"-{epoch:02d}-{val_loss:.2f}")
-        early_stop_cb = EarlyStopping(monitor="val_prauc",
+        early_stop_cb = EarlyStopping(monitor=monitor_metric,
                                       patience=5,  
                                       mode="max")
         #setup trainer
         trainer = pl.Trainer(callbacks=[early_stop_cb, metrics_cb,
                                         checkpoint_cb], gpus=1,
-                                        num_sanity_val_steps=0)
-        #Fit model and find best lr
-        #trainer.tune(model, train_dataloader=dm.train_dataloader())
+                                        num_sanity_val_steps=0,
+                                        auto_lr_find=True)
+        
+        if auto_lr:
+            #Initialize parameters of lazy layer
+            # for tuner to work
+            batch = next(iter(dm.train_dataloader()))
+            model.train()
+            model.forward(batch[0].float(), batch[1].float())
+            #find best learning rate
+            trainer.tune(model, train_dataloader=dm.train_dataloader())
+        
+        #fit model
         trainer.fit(model, datamodule=dm)
-
         # save model metrics
         model_train_metrics[model_name] = parse_metrics(metrics_cb.metrics)
         #Test the model
@@ -108,8 +146,7 @@ def run_models():
 
     print('Done!')
     pd.DataFrame(test_metrics).to_pickle('data/results/test_metrics.pkl')
-    pd.to_pickle(model_train_metrics, 'data/results/train_val_losses.pkl')
-
+    pd.to_pickle(model_train_metrics, 'data/results/train_val_metrics.pkl')
 
 if __name__ == '__main__':
     run_models()

@@ -2,13 +2,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 import pytorch_lightning as pl
-import sklearn.metrics as M
+import torchmetrics.functional as M
 from collections import defaultdict
 import numpy as np
 
 class BillNetBase(pl.LightningModule):
     """
-    Implements BillNet base model
+    Implements BillNet base model.
     """
 
     def calculate_metrics_helper(self, preds, targets, 
@@ -17,12 +17,12 @@ class BillNetBase(pl.LightningModule):
         Calculates metrics
         """
         return {
-                step+'_acc': M.accuracy_score(targets, preds),
-                step+'_f1': M.f1_score(targets, preds),
-                step+'_precision':M.precision_score(targets, preds),
-                step+'_recall':M.recall_score(targets, preds),
-                step+'_prauc': M.average_precision_score(targets, preds),
-                step+'_rocauc': M.roc_auc_score(targets, preds)
+                step+'_acc': M.accuracy(preds, targets),
+                step+'_f1': M.f1(preds, targets),
+                step+'_precision':M.precision(preds, targets),
+                step+'_recall':M.recall(preds, targets),
+                step+'_prauc': M.average_precision(preds, targets),
+                step+'_rocauc': M.auroc(preds, targets)
                 }
 
     def epoch_metrics(self, epoch_outputs):
@@ -34,7 +34,7 @@ class BillNetBase(pl.LightningModule):
         for out in epoch_outputs:
             epoch_preds=np.append(epoch_preds, out['preds'].cpu())
             epoch_targets=np.append(epoch_targets, out['targets'].cpu())
-        return epoch_preds, epoch_targets
+        return torch.tensor(epoch_preds, dtype=float), torch.tensor(epoch_targets, dtype=torch.long)
 
     def common_step(self, batch):
         x_emb, x_meta, targets = batch
@@ -43,7 +43,7 @@ class BillNetBase(pl.LightningModule):
         else:
             output = self(x_emb.float())
         loss = self.criterion(output, targets)
-        preds = torch.max(output.data, 1)[1]
+        preds = output.argmax(dim=1)
     
         return {'loss':loss, 'output':output, 
                 'targets':targets, 'preds':preds}
@@ -70,8 +70,9 @@ class BillNetBase(pl.LightningModule):
 
         preds, targets = self.epoch_metrics(outputs)
         for k,v in self.calculate_metrics_helper(preds, targets, 
-                                            step='val').items():
-            self.log(k, v)
+                                                 step='val').items():
+            self.log(k, v, prog_bar=True)
+           
     
     def test_step(self, batch, batch_idx):
         outputs = self.common_step(batch)
@@ -82,7 +83,7 @@ class BillNetBase(pl.LightningModule):
 
         preds, targets = self.epoch_metrics(outputs)
         for k,v in self.calculate_metrics_helper(preds, targets, 
-                                            step='test').items():
+                                                step='test').items():
             self.log(k, v)
     
     def configure_optimizers(self):
@@ -91,16 +92,19 @@ class BillNetBase(pl.LightningModule):
 
 class BillNet_CNN(BillNetBase):
     """
-    Implements the BillNet CNN model
+    Implements the BillNet CNN model.
+    Class weights should only be used in the criterion 
+    if weighted random sampler is not used.
     """
     def __init__(self, include_meta:bool=False, class_weights=None, 
-                 learning_rate=0.001):
+                 learning_rate=0.001, dropout_rate=0.0):
         super().__init__()
 
         self.learning_rate = learning_rate
         self.include_meta = include_meta
         self.criterion = nn.CrossEntropyLoss(weight=class_weights)
 
+        #define layers
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=64, 
                                kernel_size=3, stride=1, 
                                padding=1)
@@ -114,45 +118,53 @@ class BillNet_CNN(BillNetBase):
                                padding=0)
         
         self.pool = nn.MaxPool2d(2,2)
-        self.fc1 = nn.LazyLinear(out_features= 120)         
+        self.dropout2d = nn.Dropout2d(p=dropout_rate)
+        self.dropout = nn.Dropout(p=dropout_rate)
+        self.fc1 = nn.LazyLinear(out_features = 120)         
         self.fc2 = nn.Linear(120, 2)
         
     def forward(self, x_emb, x_meta=None):
-        x_emb = F.relu(self.batchnorm1(self.conv1(x_emb)))
+        x_emb = self.dropout2d(F.relu(self.batchnorm1(self.conv1(x_emb))))
         x_emb = self.pool(x_emb)
-        x_emb = F.relu(self.batchnorm2(self.conv2(x_emb)))
+        x_emb = self.dropout2d(F.relu(self.batchnorm2(self.conv2(x_emb))))
         x_emb = self.pool(x_emb)
-        x_emb = F.relu(self.conv3(x_emb))
+        x_emb = self.dropout2d(F.relu(self.conv3(x_emb)))
         x_emb = self.pool(x_emb)
         x_emb = torch.flatten(x_emb, 1)
         if self.include_meta:
             x = torch.cat([x_emb, x_meta], dim=1)
         else:
             x = x_emb
-        x = self.fc1(x)
-        x = F.relu(x)
+        x = self.dropout(F.relu(self.fc1(x)))
         x = self.fc2(x)
         return x
 
 class BillNet_FNN(BillNetBase):
+    """
+    BillNet feed-forward architecture.
+    Args:
+
+    Class weights should only be used in the criterion 
+    if weighted random sampler is not used.
+    """
 
     def __init__(self, 
                  avg_emb:bool=False,
                  include_meta:bool=False,
                  class_weights=None,
-                 learning_rate=0.001):
+                 learning_rate=0.001,
+                 dropout_rate=0.0):
         super().__init__()
         self.include_meta = include_meta
         self.avg_emb = avg_emb
         self.criterion = nn.CrossEntropyLoss(weight=class_weights)
         self.learning_rate = learning_rate
        
-        #------#
-        #Layers#
-        #------#
+        #define layers
         self.fc1 = nn.LazyLinear(out_features=256)
         self.fc2 = nn.Linear(256, 128)
         self.fc3 = nn.Linear(128, 2)
+        self.dropout = nn.Dropout(p=dropout_rate)
 
     def forward(self, x_emb, x_meta=None):
         if self.avg_emb:
@@ -166,9 +178,7 @@ class BillNet_FNN(BillNetBase):
             x = torch.cat([x_emb, x_meta], dim=1)
         else:
             x = x_emb
-        x = self.fc1(x)
-        x = F.relu(x)
-        x = self.fc2(x)
-        x = F.relu(x)
+        x = self.dropout(F.relu(self.fc1(x)))
+        x = self.dropout(F.relu(self.fc2(x)))
         x = self.fc3(x)        
         return x
