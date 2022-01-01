@@ -3,7 +3,6 @@ import torch.nn.functional as F
 import torch
 import pytorch_lightning as pl
 import torchmetrics.functional as M
-from collections import defaultdict
 import numpy as np
 
 class BillNetBase(pl.LightningModule):
@@ -34,7 +33,7 @@ class BillNetBase(pl.LightningModule):
         for out in epoch_outputs:
             epoch_preds=np.append(epoch_preds, out['preds'].cpu())
             epoch_targets=np.append(epoch_targets, out['targets'].cpu())
-        return torch.tensor(epoch_preds, dtype=float), torch.tensor(epoch_targets, dtype=torch.long)
+        return torch.tensor(epoch_preds, dtype=torch.long), torch.tensor(epoch_targets, dtype=torch.long)
 
     def common_step(self, batch):
         x_emb, x_meta, targets = batch

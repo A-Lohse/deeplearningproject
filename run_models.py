@@ -122,9 +122,9 @@ def run_models():
                                       mode="max")
         #setup trainer
         trainer = pl.Trainer(callbacks=[early_stop_cb, metrics_cb,
-                                        checkpoint_cb], gpus=1,
-                                        num_sanity_val_steps=0,
-                                        auto_lr_find=True)
+                                        checkpoint_cb], 
+                             gpus=1, num_sanity_val_steps=0,
+                             auto_lr_find=auto_lr)
         
         if auto_lr:
             #Initialize parameters of lazy layer
@@ -145,6 +145,7 @@ def run_models():
         #Save the model    
 
     print('Done!')
+    #save files
     pd.DataFrame(test_metrics).to_pickle('data/results/test_metrics.pkl')
     pd.to_pickle(model_train_metrics, 'data/results/train_val_metrics.pkl')
 
