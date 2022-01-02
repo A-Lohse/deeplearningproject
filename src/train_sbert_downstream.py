@@ -11,7 +11,7 @@ from src.models.sbert_downstream_CNN import SBertDsCNN
 from src.models.sbert_downstream_FNN import SBertDsFNN
 from src.data_modules.sbert_downstream_datamodule import SbertDSDataModule
 
-from src.utils.parse_metrics import parse_metrics
+from src.utils.utils import parse_metrics
 
 #remove experimental warning from lazylayer
 import warnings
@@ -68,7 +68,7 @@ def run_models():
             #FNN models avg. sentence embeddings
             'FNN avg':SBertDsFNN(avg_emb=True, include_meta=False, class_weights=class_weights,
                                   learning_rate=lr, dropout_rate=dropout_rate),
-            'FNN avg inc. meta':SBertDsCNN(avg_emb=True, include_meta=True, class_weights=class_weights,
+            'FNN avg inc. meta':SBertDsFNN(avg_emb=True, include_meta=True, class_weights=class_weights,
                                             learning_rate=lr, dropout_rate=dropout_rate)
             }
     #-------------------------#
