@@ -18,13 +18,17 @@ git clone https://github.com/A-Lohse/deeplearningproject
 cd deeplearningproject
 pip install -r requirements.txt
  ```   
- Next, navigate to any file and run it.   
- ```bash
+
+To run most models, you will have to download the embedding tensors from sentence-BERT (both vanilla and finetuned) as these are to big to store on Github. They can be found here:
+
+* [sentence-BERT embddings](gdrive)
+* [finetuned sentence-BERT embddings](gdrive)
+
+
+
+```bash
 # module folder
 cd project
-
-# run module (example: mnist as your main contribution)   
-python lit_classifier_main.py    
 ```
 
 ## Imports
