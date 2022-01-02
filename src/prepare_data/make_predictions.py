@@ -1,14 +1,14 @@
 import os
 
+#need to set the dir the the base of the project 
 os.chdir("C:\\Users\\tnv664\\OneDrive - University of Copenhagen\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject")
 
-from src.make_plot.data_utils import straitified_train_validation_split, dataloader, metrics
+from src.make_plot.data_utils import  metrics
 
 from src.models.sbert_downstream_CNN import SBertDsCNN
 from src.models.sbert_downstream_FNN import SBertDsFNN
 from src.data_modules import sbert_downstream_datamodule
 import torch
-import torch.nn as nn
 import pickle
 from sklearn.metrics import precision_recall_curve, roc_curve
 
@@ -19,8 +19,9 @@ data_path = 'data\\'
 model_dict = {}
 
 for m in os.listdir(model_path):
-    if 'meta' in m: #for now
-        continue
+    print(m)
+   #if 'meta' in m: #for now
+    #    continue
     if "baseline" in m: #do not do anything to the baseline models 
         continue
     else:    
@@ -60,7 +61,11 @@ for m in os.listdir(model_path):
                     else:
                         local_batch.flatten(start_dim = 1) #concat the the input
         
-                outputs = net(local_batch.float(), local_meta)
+                if 'meta' in m:        
+                    outputs = net(local_batch.float(), local_meta.float())
+                else:
+                    outputs = net(local_batch.float())
+                    
                 predicted = torch.max(outputs.data, 1)[1]
                 val_probas += list(outputs.data.numpy()[:,1])
                 val_targs += list(local_labels.numpy())
@@ -80,8 +85,12 @@ for m in os.listdir(model_path):
                         local_batch = torch.squeeze(local_batch) #remove the channel dim we put there for CNN
                     else:
                         local_batch.flatten(start_dim = 1) #concat the the input
-                        
-                outputs = net(local_batch.float(), local_meta)
+                
+                if 'meta' in m:        
+                    outputs = net(local_batch.float(), local_meta.float())
+                else:
+                    outputs = net(local_batch.float())
+                    
                 predicted = torch.max(outputs.data, 1)[1]
                 test_probas += list(outputs.data.numpy()[:,1])
                 test_targs += list(local_labels.numpy())
