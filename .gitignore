@@ -1,5 +1,4 @@
-data/
-*.pkl
 *.tsv
 *.pyc
-*.pt
+*.ckpt
+*.yaml
