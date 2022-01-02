@@ -23,30 +23,27 @@ To generate and run most outputs and models, you will have to download the embed
 * [sentence-BERT embddings](gdrive)
 * [finetuned sentence-BERT embddings](gdrive)
 
-If you just want to replicate the plots and tables then
+If you just want to replicate the plots and tables presented in the paper then
 ```bash
 # module folder
-cd notebooks/
+cd notebooks
 ```
-and run the notebook `analysis.ipynb`. 
-
-## Imports
-This project is setup as a package which means you can now easily import any file into any other file like so:
-```python
-from project.datasets.mnist import mnist
-from project.lit_classifier_main import LitClassifier
-from pytorch_lightning import Trainer
-
-# model
-model = LitClassifier()
-
-# data
-train, val, test = mnist()
-
-# train
-trainer = Trainer()
-trainer.fit(model, train, val)
-
-# test using the best model!
-trainer.test(test_dataloaders=test)
+and run the notebook `analysis.ipynb` which loads the trained models from the directory `/trained_models`. If you want to train the models 
+```bash
+# module folder
+cd src
+python3 train_sbert_downstream.py
+python3 train_sbert_downstream.py --finetuned_embeddings
+python3 train_vanilla_bert.py
+python3 train_baseline.py??
 ```
+
+Where the flag `--finetuned_embeddings` indicates if the finetuned embeddings should be used or not.
+
+### Extra (not required)
+
+
+
+
+
+
