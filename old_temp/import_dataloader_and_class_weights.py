@@ -5,7 +5,7 @@ import torch
 from google_drive_downloader import GoogleDriveDownloader as gdd
 from sklearn.utils.class_weight import compute_class_weight
 
-from data_utils import straitified_train_validation_split, dataloader
+from src.data_modules.sbert_downstream_datamodule import straitified_train_validation_split, dataloader
 
 
 def identifyIfInstanceOnColab() -> bool:

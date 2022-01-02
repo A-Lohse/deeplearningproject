@@ -1,26 +1,13 @@
-from calendar import c
 import torch
-from sklearn.model_selection import train_test_split
-import numpy as np
 import pytorch_lightning as pl
-from typing import Optional
+import numpy as np
+
+from torch.utils.data import DataLoader
+from sklearn.model_selection import train_test_split
 from sklearn.utils.class_weight import compute_class_weight
 from torch.utils.data.sampler import WeightedRandomSampler
 
-
-def dataloader(embeddings, meta, targets, batch_size=16,
-               num_workers=4, pin_memory=True, sampler=None):
-    """
-    Create dataloader for PyTorch.
-    """
-    return torch.utils.data.DataLoader(
-        dataset=BillNetDataset(embeddings, meta, targets),
-        batch_size=batch_size,
-        sampler = sampler,
-        num_workers=num_workers,
-        pin_memory=pin_memory)
-
-class BillNetDataset(torch.utils.data.Dataset):
+class SbertDataset(torch.utils.data.Dataset):
     """
     Dataset object to hold the data
     """
@@ -39,7 +26,12 @@ class BillNetDataset(torch.utils.data.Dataset):
     def __len__(self):
         return self.embeddings.shape[0]
 
-class BillNetDataModule(pl.LightningDataModule):
+class SbertDSDataModule(pl.LightningDataModule):
+
+    """
+    Datamodule for the sbert downstream model. Loads embeddings from 
+    either the finetuned sentence-bert model or normal sentence-bert model.
+    """
     
     def __init__(self, batch_size=16,
                 weighted_sampler=True,
@@ -79,7 +71,6 @@ class BillNetDataModule(pl.LightningDataModule):
             class_weights = compute_class_weight('balanced',
                                             classes=np.unique(target.numpy()),
                                             y=target.numpy())
-            print(f'class weights: {class_weights}')
             return torch.tensor(class_weights, dtype=torch.float)
         elif weight_type =='sample':
              # Compute samples weight (each sample should get its own weight)
@@ -108,13 +99,17 @@ class BillNetDataModule(pl.LightningDataModule):
 
     def train_dataloader(self):
         if self.weighted_sampler:
-            return dataloader(*self.train, batch_size=self.batch_size,
-                               sampler=self.sampler)
+            return DataLoader(dataset = SbertDataset(*self.train), 
+                              batch_size= self.batch_size,
+                              sampler= self.sampler)
         else:
-             return dataloader(*self.train, batch_size=self.batch_size)
+             return DataLoader(dataset = SbertDataset(*self.train), 
+                               batch_size=self.batch_size)
                            
     def val_dataloader(self):
-        return dataloader(*self.val, batch_size=self.batch_size)
+        return DataLoader(dataset = SbertDataset(*self.val),
+                          batch_size=self.batch_size)
 
     def test_dataloader(self):
-        return dataloader(*self.test, batch_size=self.batch_size)
+        return DataLoader(dataset=SbertDataset(*self.test), 
+                          batch_size=self.batch_size)

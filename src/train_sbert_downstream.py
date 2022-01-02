@@ -1,20 +1,26 @@
+import pytorch_lightning as pl
+import pandas as pd
+
+#------------training callbacks---------#
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
-from pytorch_lightning import Callback
-import pytorch_lightning as pl
-from models import BillNet_CNN, BillNet_FNN
-from src.data_modules.data_utils import BillNetDataModule
-import pandas as pd
-from collections import defaultdict
-import copy 
+from src.callbacks.metrics_callback import MetricsCallback
+
+#------------models and datamodule---------#
+from src.models.sbert_downstream_CNN import SBertDsCNN
+from src.models.sbert_downstream_FNN import SBertDsFNN
+from src.data_modules.sbert_downstream_datamodule import SbertDSDataModule
+
+from src.utils.parse_metrics import parse_metrics
+
 #remove experimental warning from lazylayer
 import warnings
 warnings.filterwarnings("ignore")
 
+
 #-------------#
 # HYPERPARAMS #
 #-------------#
-
 #If random samples or criterion should be weighted
 weighted_sampler = True
 criterion_class_weights = False
@@ -23,43 +29,6 @@ lr = 1e-3
 dropout_rate = 0.2
 monitor_metric = 'val_prauc' #area under the precision-recall curve
 #-----------------#
-
-
-class MetricsCallback(Callback):
-    """PyTorch Lightning metric callback."""
-    def __init__(self):
-        super().__init__()
-        self.metrics = []
-
-    def on_validation_epoch_end(self, trainer, pl_module):
-        each_me = copy.deepcopy(trainer.callback_metrics)
-        self.metrics.append(each_me)
-
-def parse_metrics(metrics:dict)->pd.DataFrame:
-    """
-    Helper to parse training/validation metrics from log
-    """
-    # remove metrics from sanity check
-    results  = defaultdict(list)
-    for res in metrics[1:]:
-        #val metrics
-        results['val_loss'].append(float(res['val_loss'].cpu()))
-        results['val_acc'].append(float(res['val_acc'].cpu()))
-        results['val_f1'].append(float(res['val_f1'].cpu()))
-        results['val_precision'].append(float(res['val_precision'].cpu()))
-        results['val_recall'].append(float(res['val_recall'].cpu()))
-        results['val_prauc'].append(float(res['val_prauc'].cpu()))
-        results['val_rocauc'].append(float(res['val_rocauc'].cpu()))
-        #train metrics
-        results['train_loss'].append(float(res['train_loss'].cpu()))
-        results['train_acc'].append(float(res['train_acc'].cpu()))
-        results['train_f1'].append(float(res['train_f1'].cpu()))
-        results['train_precision'].append(float(res['train_precision'].cpu()))
-        results['train_recall'].append(float(res['train_recall'].cpu()))
-        results['train_prauc'].append(float(res['train_prauc'].cpu()))
-        results['train_rocauc'].append(float(res['train_rocauc'].cpu()))
-    return pd.DataFrame(results)
-
 
 def run_models():
     #Set the seed
@@ -75,9 +44,9 @@ def run_models():
     print('-'*33)
     #Load and setup data
     if weighted_sampler:
-        dm = BillNetDataModule(weighted_sampler=True)
+        dm = SbertDSDataModule(weighted_sampler=True)
     else:
-        dm = BillNetDataModule(weighted_sampler=False)
+        dm = SbertDSDataModule(weighted_sampler=False)
     dm.setup()
 
     if criterion_class_weights == True:
@@ -87,19 +56,19 @@ def run_models():
     #Define the models to run
     models = {
             #CNN models
-            'CNN':BillNet_CNN(include_meta=False, class_weights=class_weights, 
+            'CNN':SBertDsCNN(include_meta=False, class_weights=class_weights, 
                              learning_rate=lr, dropout_rate=dropout_rate),
-            'CNN inc. meta':BillNet_CNN(include_meta=True, class_weights=class_weights,
+            'CNN inc. meta':SBertDsCNN(include_meta=True, class_weights=class_weights,
                                         learning_rate=lr, dropout_rate=dropout_rate),
             #FNN models flattened sentence embeddings
-            'FNN':BillNet_FNN(avg_emb=False, include_meta=False, class_weights=class_weights,
+            'FNN':SBertDsFNN(avg_emb=False, include_meta=False, class_weights=class_weights,
                               learning_rate=lr, dropout_rate=dropout_rate),
-            'FNN inc. meta':BillNet_FNN(avg_emb=False, include_meta=True, class_weights=class_weights,
+            'FNN inc. meta':SBertDsFNN(avg_emb=False, include_meta=True, class_weights=class_weights,
                                         learning_rate=lr, dropout_rate=dropout_rate),
             #FNN models avg. sentence embeddings
-            'FNN avg':BillNet_FNN(avg_emb=True, include_meta=False, class_weights=class_weights,
+            'FNN avg':SBertDsFNN(avg_emb=True, include_meta=False, class_weights=class_weights,
                                   learning_rate=lr, dropout_rate=dropout_rate),
-            'FNN avg inc. meta':BillNet_FNN(avg_emb=True, include_meta=True, class_weights=class_weights,
+            'FNN avg inc. meta':SBertDsCNN(avg_emb=True, include_meta=True, class_weights=class_weights,
                                             learning_rate=lr, dropout_rate=dropout_rate)
             }
     #-------------------------#
