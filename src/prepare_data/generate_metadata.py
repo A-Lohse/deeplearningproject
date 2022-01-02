@@ -1,5 +1,6 @@
 """
 This scripts is used to process the metadata feed to our models
+data comes from the congressional Bill project: http://congressionalbills.org/
 """
 
 
@@ -39,11 +40,17 @@ print(f'Missing set of ids: {set(all_ids)-set(newids)}')
 keepcols = ['bill_id', 'status', 'cong', 'Cosponsr', 'Majority', 'Party']
 metadata_df = metadata_df[keepcols]
 metadata_df[['republican', 'independent']] = pd.get_dummies(metadata_df['Party'], drop_first=True)
+metadata_df.drop(columns=['Party'], inplace=True)
+
+metadata_df = metadata_df.rename(columns={'Cosponsr':'cosponsors', 'Majority':'majority'})
+#save metadata
+metadata_df.to_csv('data/processed/bills_metadata.csv', index=False)
 
 #override keepcols for final
-keepcols = ['Cosponsr', 'Majority', 'republican', 'independent']
-train_meta = metadata_df.loc[metadata_df['cong'] != 115][keepcols]
-test_meta = metadata_df.loc[metadata_df['cong'] == 115][keepcols]
+keepcols = ['cosponsors', 'majority', 'republican', 'independent', 'cong']
+metadata_df = metadata_df[keepcols]
+train_meta = metadata_df.loc[metadata_df['cong'] != 115].drop(columns=['cong'])
+test_meta = metadata_df.loc[metadata_df['cong'] == 115].drop(columns=['cong'])
 
 #convert to tensors
 train_meta = torch.tensor(train_meta.to_numpy()).nan_to_num()
