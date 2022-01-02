@@ -1,22 +1,27 @@
 """
-This script pretrains a sentence bert model across several congressional bill documents.
-The pretraining strategy is a classification of whether a sentence is in the same 
-document as another sentence. Each sentence pair is labeled 1 if the pair of sentences 
-parsed through the model is in the same document otherwise the pair is labeled zero. 
+This script fine-tunes a sentence bert model across several congressional bill documents.
+The data consists of sentence pairs and a dummy variable indicating whether a sentence is in the same 
+bill as the other sentence in the pair.  
 """
 
 import pandas as pd
 import random
 import numpy as np
+import logging
+import math
+
 import torch
 from math import ceil, floor
-from sentence_transformers import SentenceTransformer, InputExample, losses, evaluation
+from sentence_transformers import SentenceTransformer, InputExample, losses, evaluation, LoggingHandler
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-def load_data(path:str)->pd.DataFrame:
+def load_data_and_rename_columns(path:str, rename_dict={}, drop_columns_dict={}, drop_congress_number=[])->pd.DataFrame:
     #load data
     df = pd.read_pickle(path)
+    df = df.loc[~df['cong'].isin(drop_congress_number)].copy()
+    df = df.rename(columns=rename_dict)
+    df = df.drop(columns=drop_columns_dict)
     return df
     
 def create_sentence_pairs(df:pd.DataFrame, number_of_sentence_pr_doc_max:int, random_seed:int)->list:
@@ -50,7 +55,7 @@ def train_val_split(sentence_pairs, train_fraction, random_seed=3060):
     train_obs_count = floor(len(sentence_pairs)*train_fraction)
     val_obs_count = ceil(len(sentence_pairs)*(1-train_fraction))
     train_data, val_data = torch.utils.data.random_split(sentence_pairs, [train_obs_count, val_obs_count],generator=torch.Generator().manual_seed(random_seed))
-    return train_data, val_data.dataset
+    return train_data, val_data
 
 def prepare_training_data(training_data, batch_size = 16):
     training_data = [InputExample(texts=x['texts'],label=x['label']) for x in training_data.dataset]
@@ -64,27 +69,37 @@ def prepare_validation_data(val_data:list):
     return sentence1_val, sentence2_val, label_val
 
 def main():
-    print("Loading data...")
-    df = load_data('data/processed/bert_data.pickle')
-    print("Preparing sentence pairs...")
-    df = df.sample(n=300)
+    logging.basicConfig(format='%(asctime)s - %(message)s',
+                datefmt='%Y-%m-%d %H:%M:%S',
+                level=logging.INFO,
+                handlers=[LoggingHandler()])
+
+    logging.info("Loading data")
+    df = load_data_and_rename_columns('data/processed/bert_data.pickle', drop_congress_number=[115])
+    logging.info("Preparing sentence pairs...")
+    #df = df.sample(n=300) #TODO: remove when training for real
+    logging.info("Create sentence pairs")
     sentence_pairs = create_sentence_pairs(df, number_of_sentence_pr_doc_max=20, random_seed=3060)
-    print("Training-validation split...")
-    train_data, val_data = train_val_split(sentence_pairs,train_fraction=0.9, random_seed=3060)
-    print("Preparing training-data...")
-    train_dataloader = prepare_training_data(train_data,batch_size = 16)
-    print("Preparing validation data...")
+    logging.info(f"{len(sentence_pairs)} sentence pairs are created")
+    logging.info("Training-validation split...")
+    train_data, val_data = train_val_split(sentence_pairs, train_fraction=0.9, random_seed=3060)
+    logging.info(f"{len(train_data)} sentence pairs are in the training set")
+    logging.info(f"{len(val_data)} sentence pairs are in the validation set")
+    logging.info("Preparing training-data...")
+    train_dataloader = prepare_training_data(train_data,batch_size = 32)
+    logging.info("Preparing validation data...")
     sentence1_val, sentence2_val, label_val = prepare_validation_data(val_data)
-    print("Loading pretrained model...")
+    logging.info("Loading distilbert-base-nli-mean-tokens...")
     model = SentenceTransformer('distilbert-base-nli-mean-tokens')
-    print("Set loss-function and evaluator...")
-    evaluator = evaluation.BinaryClassificationEvaluator(sentence1_val,sentence2_val,label_val, name="validation metrics", batch_size=16, show_progress_bar=True)
+    num_epochs = 3
+    warmup_steps = math.ceil(len(train_dataloader) * num_epochs  * 0.1) #10% of train data for warm-up
+    evaluator = evaluation.BinaryClassificationEvaluator(sentence1_val,sentence2_val,label_val, name="validation metrics for the Binary Classifaction Evaluator", batch_size=32, show_progress_bar=True)
     train_loss = losses.SoftmaxLoss(model, model.get_sentence_embedding_dimension(), num_labels=2)
-    print("Train model...")
-    model.fit(train_objectives=[(train_dataloader, train_loss)], epochs=4, warmup_steps=100,evaluator=evaluator, evaluation_steps=500)
-    print("Save model...")
-    model.save("data/processed/pretrained_model")
-    print("Done")
+    model_save_path = "data/processed/pretrained_model"
+    model.fit(train_objectives=[(train_dataloader, train_loss)], epochs=num_epochs, warmup_steps=warmup_steps,evaluator=evaluator, evaluation_steps=len(train_dataloader), output_path=model_save_path)
+    logging.info("Save model...")
+    model.save(model_save_path)
+    logging.info("Done")
 
 if __name__ == '__main__':
     main()
