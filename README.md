@@ -20,8 +20,8 @@ pip install -r requirements.txt
  ```   
 
 To generate and run most outputs and models, you will have to download the embedding tensors from sentence-BERT (both vanilla and finetuned) as these are to big to store on Github (links below). Place the tensors in the directory `/data/processed/`.
-* [sentence-BERT embddings](gdrive)
-* [finetuned sentence-BERT embddings](gdrive)
+* [sentence-BERT embeddings](gdrive)
+* [finetuned sentence-BERT embeddings](gdrive)
 
 If you just want to replicate the plots and tables presented in the paper then
 ```bash
