@@ -49,11 +49,19 @@ Several modules under `/src/prepare_data/` are used to prepare the data for our 
 
 **1. Generating metadata**
 
+Apart from the Bill text we include the following metadata
+
+* `bill_status (outcome variable)`: Dummy of bill status (1 if enacted, 0 otherwise)
+* `cosponsors`: Interger value of the amount of cosponsors
+* `majority`: Dummy of if bill proposing party is in majority
+* `party`: Party dummy
+* `gender`: Dummy of if the bill proposing politician is male/female.
+
 
 
 **2. Generate finetuning data for BERT**
 
-The data used to finetune BERT comes from the [BillSum](https://github.com/FiscalNote/BillSum) project. Specifically the two datafiles `data/raw/us_train_sent_scores.pkl` and `data/raw/us_train_sent_scores.pkl` are used. The module `generate_bert_finetuning_data.py` extracts the relevant text from BillSum data and matches it with bill with meta data, including if the Bill was enacted or not. 
+The Bill text data used to finetune BERT comes from the [BillSum](https://github.com/FiscalNote/BillSum) project. Specifically the two datafiles `data/raw/us_train_sent_scores.pkl` and `data/raw/us_train_sent_scores.pkl` are used. The module `generate_bert_finetuning_data.py` extracts the relevant text from BillSum data and matches it with bill with meta data, including if the Bill was enacted or not. 
 
 **3. Finetuning sentence-BERT**
 
