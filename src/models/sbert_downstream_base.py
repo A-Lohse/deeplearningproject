@@ -1,8 +1,9 @@
+from audioop import mul
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
 import pytorch_lightning as pl
-import torchmetrics.functional as M
+import sklearn.metrics as M
 import numpy as np
 
 class SBertDsBase(pl.LightningModule):
@@ -16,12 +17,12 @@ class SBertDsBase(pl.LightningModule):
         Calculates metrics for a given set of predictions and targets.
         """
         return {
-                step+'_acc': M.accuracy(preds, targets),
-                step+'_f1': M.f1(preds, targets),
-                step+'_precision':M.precision(preds, targets),
-                step+'_recall':M.recall(preds, targets),
-                step+'_prauc': M.average_precision(preds, targets),
-                step+'_rocauc': M.auroc(preds, targets)
+                step+'_acc': M.accuracy_score(targets, preds),
+                step+'_f1': M.f1_score(targets, preds),
+                step+'_precision':M.precision_score(targets, preds),
+                step+'_recall':M.recall_score(targets, preds),
+                step+'_prauc': M.average_precision_score(targets, preds),
+                step+'_rocauc': M.roc_auc_score(targets, preds),
                 }
 
     def epoch_metrics(self, epoch_outputs):
@@ -34,7 +35,7 @@ class SBertDsBase(pl.LightningModule):
         for out in epoch_outputs:
             epoch_preds=np.append(epoch_preds, out['preds'].cpu())
             epoch_targets=np.append(epoch_targets, out['targets'].cpu())
-        return torch.tensor(epoch_preds, dtype=torch.long), torch.tensor(epoch_targets, dtype=torch.long)
+        return epoch_preds, epoch_targets
 
     def common_step(self, batch):
         """
@@ -46,7 +47,7 @@ class SBertDsBase(pl.LightningModule):
         else:
             output = self(x_emb.float())
         loss = self.criterion(output, targets)
-        preds = output.argmax(dim=1)
+        preds = torch.argmax(output, dim=1)
     
         return {'loss':loss, 'output':output, 
                 'targets':targets, 'preds':preds}
