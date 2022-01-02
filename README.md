@@ -41,17 +41,19 @@ Where the flag `--finetuned_embeddings` indicates if the finetuned embeddings sh
 
 ### Extra
 
-Several modules under `/src/prepare_data/` are used to prepare the data for our models. This includes data cleaning, finetuning both sentence-BERT and vanilla BERT and extracting document embeddings. Below follows an overview of what they do and how to run them.
+Several modules under `/src/prepare_data/` are used to prepare the data for our models. This includes data cleaning, finetuning both sentence-BERT and vanilla BERT and extracting document embeddings. Below follows an overview of what they do.
+
+**1. Generating metadata**
 
 **Generate finetuning data for BERT**
 
-The data used to finetune BERT comes from the [BillSum](https://github.com/FiscalNote/BillSum) project. Specifically the two datafiles The module `g
+The data used to finetune BERT comes from the [BillSum](https://github.com/FiscalNote/BillSum) project. Specifically the two datafiles `data/raw/us_train_sent_scores.pkl` and `data/raw/us_train_sent_scores.pkl` are used. The module `generate_bert_finetuning_data.py` extracts the relevant text from BillSum data and matches it with bill with meta data, including if the Bill was enacted or not. 
 
 **Finetuning sentence-BERT**
 
+
 **Extracting Bill Embeddings**
 
-**Generating metadata**
 
 
 ## References
