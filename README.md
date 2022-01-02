@@ -7,7 +7,7 @@
 </div>
  
 ## Description   
-What it does   
+Here we write a short project description.
 
 ## How to run   
 First, install dependencies   
