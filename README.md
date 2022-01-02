@@ -41,6 +41,13 @@ Where the flag `--finetuned_embeddings` indicates if the finetuned embeddings sh
 
 ### Extra
 
-Several modules under `/src` are used to prepare the data for our models. This includes data cleaning, finetuning both sentence-BERT and vanilla BERT and extracting document embeddings. 
+Several modules under `/src/prepare_data/` are used to prepare the data for our models. This includes data cleaning, finetuning both sentence-BERT and vanilla BERT and extracting document embeddings. Below follows an overview of what they do and how to run them.
 
+**Generate finetuning data for BERT**
+
+**Fintuning sentence-BERT**
+
+**Extracting Bill Embeddings**
+
+**Generating metadata**
 
