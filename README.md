@@ -45,14 +45,14 @@ Several modules under `/src/prepare_data/` are used to prepare the data for our 
 
 **1. Generating metadata**
 
-**Generate finetuning data for BERT**
+**2. Generate finetuning data for BERT**
 
 The data used to finetune BERT comes from the [BillSum](https://github.com/FiscalNote/BillSum) project. Specifically the two datafiles `data/raw/us_train_sent_scores.pkl` and `data/raw/us_train_sent_scores.pkl` are used. The module `generate_bert_finetuning_data.py` extracts the relevant text from BillSum data and matches it with bill with meta data, including if the Bill was enacted or not. 
 
-**Finetuning sentence-BERT**
+**3. Finetuning sentence-BERT**
 
 
-**Extracting Bill Embeddings**
+**4. Extracting Bill Embeddings**
 
 
 
