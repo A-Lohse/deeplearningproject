@@ -30,7 +30,7 @@ dropout_rate = 0.2
 monitor_metric = 'val_prauc' #area under the precision-recall curve
 #-----------------#
 
-def run_models():
+def train_models():
     #Set the seed
     print('Starting to train models')
     pl.seed_everything(1234)
@@ -58,17 +58,17 @@ def run_models():
             #CNN models
             'CNN':SBertDsCNN(include_meta=False, class_weights=class_weights, 
                              learning_rate=lr, dropout_rate=dropout_rate),
-            'CNN inc. meta':SBertDsCNN(include_meta=True, class_weights=class_weights,
+            'CNN_meta':SBertDsCNN(include_meta=True, class_weights=class_weights,
                                         learning_rate=lr, dropout_rate=dropout_rate),
             #FNN models flattened sentence embeddings
             'FNN':SBertDsFNN(avg_emb=False, include_meta=False, class_weights=class_weights,
                               learning_rate=lr, dropout_rate=dropout_rate),
-            'FNN inc. meta':SBertDsFNN(avg_emb=False, include_meta=True, class_weights=class_weights,
+            'FNN_meta':SBertDsFNN(avg_emb=False, include_meta=True, class_weights=class_weights,
                                         learning_rate=lr, dropout_rate=dropout_rate),
             #FNN models avg. sentence embeddings
-            'FNN avg':SBertDsFNN(avg_emb=True, include_meta=False, class_weights=class_weights,
+            'FNN_avg':SBertDsFNN(avg_emb=True, include_meta=False, class_weights=class_weights,
                                   learning_rate=lr, dropout_rate=dropout_rate),
-            'FNN avg inc. meta':SBertDsFNN(avg_emb=True, include_meta=True, class_weights=class_weights,
+            'FNN_avg_meta':SBertDsFNN(avg_emb=True, include_meta=True, class_weights=class_weights,
                                             learning_rate=lr, dropout_rate=dropout_rate)
             }
     #-------------------------#
@@ -85,7 +85,7 @@ def run_models():
                                         mode='max',
                                         save_top_k=1,
                                         dirpath='trained_models/',
-                                        filename=model_name+"-{epoch:02d}-{val_loss:.2f}")
+                                        filename=model_name)
         early_stop_cb = EarlyStopping(monitor=monitor_metric,
                                       patience=5,  
                                       mode="max")
@@ -119,4 +119,4 @@ def run_models():
     pd.to_pickle(model_train_metrics, 'data/results/train_val_metrics.pkl')
 
 if __name__ == '__main__':
-    run_models()
+    train_models()
