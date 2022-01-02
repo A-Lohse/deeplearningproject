@@ -27,7 +27,7 @@ for m in os.listdir(model_path):
     else:    
         model_dict[m] = {}    
         model_dict[m]['val'] = {}
-        model_dict[m]['test'] = {}
+git         model_dict[m]['test'] = {}
         
         #set up the dataloader and model
         if 'CNN' in m:
