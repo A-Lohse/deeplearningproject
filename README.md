@@ -23,12 +23,12 @@ To generate and run most outputs and models, you will have to download the embed
 * [sentence-BERT embddings](gdrive)
 * [finetuned sentence-BERT embddings](gdrive)
 
-
-
+If you just want to replicate the plots and tables then
 ```bash
 # module folder
-cd project
+cd notebooks/
 ```
+and run the notebook `analysis.ipynb`. 
 
 ## Imports
 This project is setup as a package which means you can now easily import any file into any other file like so:
