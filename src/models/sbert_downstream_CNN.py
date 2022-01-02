@@ -52,7 +52,8 @@ class SBertDsCNN(SBertDsBase):
         x_emb = self.dropout2d(F.relu(self.conv3(x_emb)))
         x_emb = self.pool(x_emb)
         x_emb = torch.flatten(x_emb, 1)
-        if self.include_meta:
+        if self.include_meta or x_meta is not None:
+            
             x = torch.cat([x_emb, x_meta], dim=1)
         else:
             x = x_emb
