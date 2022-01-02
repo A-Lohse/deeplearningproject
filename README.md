@@ -13,11 +13,9 @@ What it does
 First, install dependencies   
 ```bash
 # clone project   
-git clone https://github.com/YourGithubName/deep-learning-project-template
-
+git clone https://github.com/A-Lohse/deeplearningproject
 # install project   
-cd deep-learning-project-template 
-pip install -e .   
+cd deeplearningproject
 pip install -r requirements.txt
  ```   
  Next, navigate to any file and run it.   

@@ -1,5 +1,3 @@
-data/
-*.pkl
 *.tsv
 *.pyc
 *.pt
