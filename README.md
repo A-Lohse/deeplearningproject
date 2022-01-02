@@ -55,19 +55,20 @@ Apart from the Bill text we include the following metadata
 * `cosponsors`: Interger value of the amount of cosponsors
 * `majority`: Dummy of if bill proposing party is in majority
 * `party`: Party dummy
-* `gender`: Dummy of if the bill proposing politician is male/female.
+* `gender`: Dummy of if the bill proposing politician is male/female
 
+The data comes from the [Congressional Bills Project](http://congressionalbills.org/) and the original data can be downloaded [here](http://congressionalbills.org/download.html) and is prepared using the script `generate_metadata.py`. 
 
+**2. Generate finetuning and embedding extraction data for BERT/S-BERT**
 
-**2. Generate finetuning data for BERT**
-
-The Bill text data used to finetune BERT comes from the [BillSum](https://github.com/FiscalNote/BillSum) project. Specifically the two datafiles `data/raw/us_train_sent_scores.pkl` and `data/raw/us_train_sent_scores.pkl` are used. The module `generate_bert_finetuning_data.py` extracts the relevant text from BillSum data and matches it with bill with meta data, including if the Bill was enacted or not. 
+The Bill text data used to finetune BERT and extract bill Embeddings comes from the [BillSum](https://github.com/FiscalNote/BillSum) project. Specifically the two datafiles `data/raw/us_train_sent_scores.pkl` and `data/raw/us_train_sent_scores.pkl` are used. The module `generate_bert_finetuning_data.py` extracts the relevant text from BillSum data and merges it with the bill with meta data, including if the Bill was enacted or not through the unique bill ID. 
 
 **3. Finetuning sentence-BERT**
 
 
 **4. Extracting Bill Embeddings**
 
+To extract the Bill Embeddings we feed to the downstream tasks we pass the data prepared in step 2 to Sentence-BERT.  
 
 
 ## References
