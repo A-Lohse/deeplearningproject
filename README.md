@@ -7,7 +7,7 @@
 </div>
  
 ## Description   
-Here we write a short project description.
+This repository contains the code used for our project in the course **[02456 Deep Learning](https://github.com/DeepLearningDTU/02456-deep-learning-with-PyTorch)** at the Technical University of Denmark (DTU).
 
 ## How to run   
 First, install dependencies   
@@ -45,9 +45,15 @@ Several modules under `/src/prepare_data/` are used to prepare the data for our 
 
 **Generate finetuning data for BERT**
 
-**Fintuning sentence-BERT**
+The data used to finetune BERT comes from the [BillSum](https://github.com/FiscalNote/BillSum) project. Specifically the two datafiles The module `g
+
+**Finetuning sentence-BERT**
 
 **Extracting Bill Embeddings**
 
 **Generating metadata**
 
+
+## References
+
+> Kornilova, A., & Eidelman, V. (2019). Billsum: A corpus for automatic summarization of us legislation. arXiv preprint arXiv:1910.00523.
