@@ -1,20 +1,19 @@
 import os
 
 #need to set the dir the the base of the project 
-os.chdir("C:\\Users\\tnv664\\OneDrive - University of Copenhagen\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject")
+#os.chdir("C:\\Users\\tnv664\\OneDrive - University of Copenhagen\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject")
+os.chdir("C:\\Users\\augus\\OneDrive - Københavns Universitet\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\\src")
+from make_plot.data_utils import  metrics
 
-from src.make_plot.data_utils import  metrics
-
-from src.models.sbert_downstream_CNN import SBertDsCNN
-from src.models.sbert_downstream_FNN import SBertDsFNN
-from src.data_modules import sbert_downstream_datamodule
+from models.sbert_downstream_CNN import SBertDsCNN
+from models.sbert_downstream_FNN import SBertDsFNN
+from data_modules import sbert_downstream_datamodule
 import torch
 import pickle
 from sklearn.metrics import precision_recall_curve, roc_curve
 
-
-model_path = "src\\models\\trained_models\\"
-data_path = 'data\\'
+model_path = "C:\\Users\\augus\\OneDrive - Københavns Universitet\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\\trained_models\\"
+data_path = "C:\\Users\\augus\\OneDrive - Københavns Universitet\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\\data\\"
 
 model_dict = {}
 

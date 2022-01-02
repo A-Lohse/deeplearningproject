@@ -4,7 +4,7 @@ import torch
 import pytorch_lightning as pl
 import torchmetrics.functional as M
 import numpy as np
-from src.models.sbert_downstream_base import SBertDsBase
+from models.sbert_downstream_base import SBertDsBase
 
 class SBertDsFNN(SBertDsBase):
     """

@@ -1,6 +1,8 @@
 import os
 
-os.chdir("C:\\Users\\tnv664\\OneDrive - University of Copenhagen\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject")
+#os.chdir("C:\\Users\\tnv664\\OneDrive - University of Copenhagen\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\\")
+os.chdir("C:\\Users\\augus\\OneDrive - Københavns Universitet\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject")
+
 
 from sklearn.metrics import recall_score, precision_score, f1_score, accuracy_score, confusion_matrix
 from sklearn.metrics import roc_curve
@@ -38,7 +40,7 @@ if tex:
 
 path = 'data\\' 
 
-model_path = "src\\models\\trained_models\\baseline\\" 
+model_path = "trained_models\\baseline\\" 
 
 result_path = 'data\\results\\'
 
