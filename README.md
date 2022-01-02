@@ -28,7 +28,7 @@ If you just want to replicate the plots and tables presented in the paper then
 # module folder
 cd notebooks
 ```
-and run the notebook `analysis.ipynb` which loads the trained models from the directory `/trained_models`. If you want to train the models 
+and run the notebook `analysis.ipynb` which loads the trained models from the directory `/trained_models`. If you instead want to train the models then you can run the following commands
 ```bash
 # module folder
 cd src
@@ -37,13 +37,10 @@ python3 train_sbert_downstream.py --finetuned_embeddings
 python3 train_vanilla_bert.py
 python3 train_baseline.py??
 ```
+Where the flag `--finetuned_embeddings` indicates if the finetuned embeddings should be used or not. 
 
-Where the flag `--finetuned_embeddings` indicates if the finetuned embeddings should be used or not.
+### Extra
 
-### Extra (not required)
-
-
-
-
+Several modules under `/src` are used to prepare the data for our models. This includes data cleaning, finetuning both sentence-BERT and vanilla BERT and extracting document embeddings. 
 
 
