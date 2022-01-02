@@ -19,8 +19,7 @@ cd deeplearningproject
 pip install -r requirements.txt
  ```   
 
-To run most models, you will have to download the embedding tensors from sentence-BERT (both vanilla and finetuned) as these are to big to store on Github. They can be found here:
-
+To generate and run most outputs and models, you will have to download the embedding tensors from sentence-BERT (both vanilla and finetuned) as these are to big to store on Github (links below). Place the tensors in the directory `/data/processed/`.
 * [sentence-BERT embddings](gdrive)
 * [finetuned sentence-BERT embddings](gdrive)
 
