@@ -10,6 +10,8 @@ from src.data_modules import sbert_downstream_datamodule
 import torch
 import torch.nn as nn
 import pickle
+from sklearn.metrics import precision_recall_curve, roc_curve
+
 
 model_path = "src\\models\\trained_models\\"
 data_path = 'data\\'
@@ -17,8 +19,10 @@ data_path = 'data\\'
 model_dict = {}
 
 for m in os.listdir(model_path):
+    if 'meta' in m: #for now
+        continue
     if "baseline" in m: #do not do anything to the baseline models 
-        pass
+        continue
     else:    
         model_dict[m] = {}    
         model_dict[m]['val'] = {}
@@ -61,7 +65,14 @@ for m in os.listdir(model_path):
                 val_probas += list(outputs.data.numpy()[:,1])
                 val_targs += list(local_labels.numpy())
                 val_preds += list(predicted.data.numpy())
+        model_dict[m]['val']['targs'] =  val_targs
+        model_dict[m]['val']['preds'] =  val_preds
+        model_dict[m]['val']['probas'] =  val_probas
+        
+        #clear up memory 
+        del val_probas, val_targs, val_preds, outputs, predicted, local_batch, local_meta, local_labels
             ####TEST DATA####
+        with torch.no_grad():
             for local_batch, local_meta, local_labels in dm.test_dataloader():
                 if "FNN" in m:
                     if 'avg' in m:
@@ -77,17 +88,48 @@ for m in os.listdir(model_path):
                 test_preds += list(predicted.data.numpy())
         
         
-        model_dict[m]['val']['targs'] =  val_targs
-        model_dict[m]['val']['preds'] =  val_preds
-        model_dict[m]['val']['probas'] =  val_probas
+
           
         model_dict[m]['test']['targs'] =  test_targs
         model_dict[m]['test']['preds'] =  test_preds
         model_dict[m]['test']['probas'] =  test_probas
         
-        with open(data_path + "results\\results_" + m[0:-5] + ".pkl", "wb") as f:
-            pickle.dump(model_dict, f)
+        del net, dm, my_model, test_probas, test_targs, test_preds, outputs, predicted, local_batch, local_meta, local_labels
+
+
+
+#create some nice metrics for plotting 
+results = model_dict
+for m in results.keys():
+            
+    #metrics
+    metrics(results[m]['val']['targs'],
+            results[m]['val']['preds'],
+            results[m]['test']['targs'],
+            results[m]['test']['preds'])
+    
+    pr_val, recal_val , _ = precision_recall_curve(results[m]['val']['targs'], results[m]['val']['probas'])
+    pr_test, recal_test , _ = precision_recall_curve(results[m]['test']['targs'], results[m]['test']['probas'])
+    
+    #asign values
+    
+    
+    fpr_val, tpr_val, _ = roc_curve(results[m]['val']['targs'], results[m]['val']['probas'])
+    fpr_test, tpr_test, _ = roc_curve(results[m]['test']['targs'], results[m]['test']['probas'])
+    
+    #asign the values
+    results[m]['val']['pr'] = pr_val
+    results[m]['val']['recal'] = recal_val
+    results[m]['val']['fpr'] = fpr_val
+    results[m]['val']['tpr'] = tpr_val
+    
+    results[m]['test']['pr'] = pr_test
+    results[m]['test']['recal'] = recal_test
+    results[m]['test']['fpr'] = fpr_test
+    results[m]['test']['tpr'] = tpr_test        
+
+
+with open(data_path + "results\\predictions.pkl", "wb") as f:
+    pickle.dump(model_dict, f)
 
     
-    
-         

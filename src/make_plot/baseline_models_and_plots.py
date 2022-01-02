@@ -332,15 +332,23 @@ plt.show()
 plt.tight_layout()
 plt.savefig(plot_path + 'train_losses.pdf', format='pdf')
 
-#### import predictions and do metrics and plots
+######################################################## import predictions and do metrics and plots
+with open(result_path + "predictions.pkl", "rb") as f:
+    results = pickle.load(f)
 
 ##
-networks_path = "src\\models\\trained_models\\"
+#plot_dict = {}
+#networks_path = "src\\models\\trained_models\\"
 
-for m in os.listdir(model_path):
-    if "baseline" in m:
-        pass
-    else:
-        
-
-
+#for m in os.listdir(model_path):
+for m in results.keys():
+            
+    #metrics
+    print(m)
+    metrics(results[m]['val']['targs'],
+            results[m]['val']['preds'],
+            results[m]['test']['targs'],
+            results[m]['test']['preds'])
+    
+   
+####### non meta plot 
