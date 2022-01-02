@@ -36,13 +36,13 @@ if tex:
 
 
 
-path = 'C:\\Users\\tnv664\\OneDrive - University of Copenhagen\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\\data\\' 
+path = 'data\\' 
 
-model_path = 'C:\\Users\\tnv664\\OneDrive - University of Copenhagen\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\\src\\models\\trained_models\\baseline\\' 
+model_path = "src\\models\\trained_models\\baseline\\" 
 
-result_path = 'C:\\Users\\tnv664\\OneDrive - University of Copenhagen\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\\data\\results\\'
+result_path = 'data\\results\\'
 
-plot_path = 'C:\\Users\\tnv664\\OneDrive - University of Copenhagen\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\plots\\'
+plot_path = 'plots\\'
 
 """#Indlæser data"""
 
@@ -334,6 +334,13 @@ plt.savefig(plot_path + 'train_losses.pdf', format='pdf')
 
 #### import predictions and do metrics and plots
 
+##
+networks_path = "src\\models\\trained_models\\"
 
+for m in os.listdir(model_path):
+    if "baseline" in m:
+        pass
+    else:
+        
 
 

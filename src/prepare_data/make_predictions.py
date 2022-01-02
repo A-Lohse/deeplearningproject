@@ -12,12 +12,11 @@ import torch.nn as nn
 import pickle
 
 model_path = "src\\models\\trained_models\\"
-data_path = 'C:\\Users\\tnv664\\OneDrive - University of Copenhagen\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\\data\\'
+data_path = 'data\\'
 
 model_dict = {}
 
-#for m in os.listdir(model_path):
-for m in ["FNN-epoch=04-val_loss=0.36.ckpt"]:
+for m in os.listdir(model_path):
     if "baseline" in m: #do not do anything to the baseline models 
         pass
     else:    
