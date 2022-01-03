@@ -48,7 +48,7 @@ plot_path = 'plots_tables\\'
 
 """#Indlæser data"""
 
-rerun_baseline = False #saves new prediction probas
+rerun_baseline = True #saves new prediction probas
 
 if rerun_baseline:
   bert_train = torch.load(path + 'bert_train_103-114.pt')
@@ -86,6 +86,45 @@ random_test =[0] * len(test_labels) #predict largest class
 
 metrics(labels_val, random_val, test_labels, random_test)
 
+
+run_log_only_meta = True
+'''only meta logistic'''
+if run_log_only_meta:
+    clf_log_only_meta = LogisticRegression(random_state = 0, class_weight = 'balanced').fit(meta_train.numpy(), labels_train)
+    val_preds = clf_log_only_meta.predict(meta_val.numpy())
+    test_preds = clf_log_only_meta.predict(meta_test.numpy())
+    
+    filename = 'logreg_model_only_meta.sav'
+    pickle.dump(clf_log_only_meta, open(model_path + filename, 'wb'))
+    with open(result_path + 'logreg_only_meta_val_pred.npy', 'wb') as f:
+        np.save(f,val_preds)
+    with open(result_path + 'logreg_only_meta_test_pred.npy', 'wb') as f:
+        np.save(f,test_preds)
+else:
+    filename = 'logreg_model_only_meta.sav'
+    clf_log_only_meta = pickle.load(open(model_path + filename, 'rb'))
+    with open(result_path + 'logreg_only_meta_val_pred.npy', 'rb') as f:
+        val_preds = np.load(f)
+    with open(result_path + 'logreg_only_meta_test_pred.npy', 'rb') as f:
+        test_preds = np.load(f)
+
+metrics(labels_val, val_preds, test_labels, test_preds)
+auc_log_only_meta = roc_auc_score(labels_val, val_preds)
+
+
+if rerun_baseline:
+  preds = clf_log_only_meta.predict_proba(meta_train.numpy())
+  with open(result_path + 'logreg_only_meta_val_probas.npy', 'wb') as f:
+    np.save(f,preds)
+else:
+  with open(result_path + 'logreg_only_meta_val_probas.npy', 'rb') as f:
+      preds = np.load(f)
+      
+lr_precision_log_only_meta, lr_recall_log_only_meta , _ = precision_recall_curve(labels_val, preds[:,1])
+lr_fpr_log_only_meta, lr_tpr_log_only_meta, _ = roc_curve(labels_val, preds[:,1])
+
+if rerun_baseline:
+    exit()
 """## Logistic regression"""
 
 run_log = False #run logistic regression?
