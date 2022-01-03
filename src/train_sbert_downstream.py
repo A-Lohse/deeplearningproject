@@ -28,6 +28,7 @@ auto_lr = False #Use lightning to find optimal lr
 lr = 1e-3
 dropout_rate = 0.2
 monitor_metric = 'val_prauc' #area under the precision-recall curve
+finetuned_embs = True
 #-----------------#
 
 def train_models():
@@ -42,11 +43,10 @@ def train_models():
     print(f'Weighted samples: {weighted_sampler}')
     print(f'Weighted classes in criterion: {criterion_class_weights}')
     print('-'*33)
+
     #Load and setup data
-    if weighted_sampler:
-        dm = SbertDSDataModule(weighted_sampler=True)
-    else:
-        dm = SbertDSDataModule(weighted_sampler=False)
+    dm = SbertDSDataModule(weighted_sampler=weighted_sampler, 
+                           finetuned_embs=finetuned_embs)
     dm.setup()
 
     if criterion_class_weights == True:
@@ -77,6 +77,8 @@ def train_models():
     model_train_metrics = dict()
     test_metrics = dict()
     for model_name, model in models.items():
+        if finetuned_embs:
+            model_name += 'finetuned_embs'
         print('-'*66)
         print(f'Training: {model_name}')
         print('-'*66)
