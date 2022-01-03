@@ -83,9 +83,11 @@ class SbertDSDataModule(pl.LightningDataModule):
     def setup(self):
         # read tensors for training and val
         if self.finetuned_embs:
-            bert_train = torch.load(self.data_path + 'fine_tuned_sbert_train_103-114.pt')
-            bert_test = torch.load(self.data_path + 'fine_tuned_sbert_test_115.pt')
+            print('Finetuned embeddings loaded into datamodule.')
+            bert_train = torch.load(self.data_path + 'finetuned_sbert_train_103-114.pt')
+            bert_test = torch.load(self.data_path + 'finetuned_sbert_test_115.pt')
         else:
+            print('Non-finetuned embeddings loaded into datamodule.')
             bert_train = torch.load(self.data_path + 'sbert_train_103-114.pt')
             bert_test = torch.load(self.data_path + 'sbert_test_115.pt')
 
