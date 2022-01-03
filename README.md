@@ -84,6 +84,7 @@ If you wish to train new models, and obtain create new results, plots and tables
 Place them in `/trained models´ - make sure that they are named with "meta" and "CNN" or "FNN" as well as "avg" if you average the the sentence embeddings in the FNN. This will make sure that the models are loaded correctly in the next step.
 
 **6. Predict on data**
+
 Run make_predictions.py in /prepare_data.py - This will create a predictions.pkl file in the data/results folder. This file contains a dictionary with all the model names as keys, and contains targets, predicted, probas and false/negative positive rate as well as precision recall curve. This file is used for plotting and creating tables
 
 
