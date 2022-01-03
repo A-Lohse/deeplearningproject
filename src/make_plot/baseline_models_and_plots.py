@@ -1,7 +1,7 @@
 import os
 
-#os.chdir("C:\\Users\\tnv664\\OneDrive - University of Copenhagen\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\\")
-os.chdir("C:\\Users\\augus\\OneDrive - Københavns Universitet\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject")
+os.chdir("C:\\Users\\tnv664\\OneDrive - University of Copenhagen\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\\")
+#os.chdir("C:\\Users\\augus\\OneDrive - Københavns Universitet\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject")
 
 
 from sklearn.metrics import recall_score, precision_score, f1_score, accuracy_score, confusion_matrix
@@ -44,7 +44,7 @@ model_path = "trained_models\\baseline\\"
 
 result_path = 'data\\results\\'
 
-plot_path = 'plots\\'
+plot_path = 'plots_tables\\'
 
 """#Indlæser data"""
 
@@ -354,3 +354,60 @@ for m in results.keys():
     
    
 ####### non meta plot 
+
+markers = ['-+','-*','-^']
+#with plt.style.context('science'):
+fig, axs = plt.subplots(ncols = 2, dpi = 500, figsize=(8,3))
+#with plt.style.context('science'):
+axs[0].plot(lr_fpr_log, lr_tpr_log, '--+', markersize=2, label='Logistic regression - AUC: {}'.format(round(auc_log,2)), color = "red")
+axs[1].plot(lr_precision_log, lr_recall_log, '--+', markersize=2, label='Logistic regression', color = "red")
+
+i = 0
+for m in results.keys():
+    if 'meta' not in m:
+        auc = roc_auc_score(results[m]['val']['targs'],results[m]['val']['preds'])
+        axs[0].plot(results[m]['val']['fpr'], results[m]['val']['tpr'], markers[i], markersize=3, label= m + '- AUC: {}'.format(round(auc,2)))
+        axs[1].plot(results[m]['val']['pr'], results[m]['val']['recal'], markers[i], markersize=3, label= m)
+        i+= 1
+    
+    #axs[1].plot(lr_precision_ada, lr_recall_ada, '--v', markersize=2, label='Adaboost', color = "green")
+#axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada,2)), color = "green")
+#axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - AUC: {}'.format(round(auc_high,2)), color = "blue")
+axs[0].set_xlabel('False Positive Rate')
+axs[0].set_ylabel('True Positive Rate')
+axs[0].set_title('ROC')
+axs[0].legend(fontsize=6)
+axs[1].set_ylabel('Recall')
+axs[1].set_xlabel('Precission')
+axs[1].set_title('Precision-Recall')
+axs[1].legend(fontsize=6)
+plt.tight_layout()
+plt.savefig(plot_path + 'trained_metrics.pdf', format='pdf')
+
+
+
+fig, axs = plt.subplots(ncols = 2, dpi = 500, figsize=(8,3))
+#with plt.style.context('science'):
+axs[0].plot(lr_fpr_log, lr_tpr_log, '--+', markersize=2, label='Logistic regression - AUC: {}'.format(round(auc_log,2)), color = "red")
+axs[1].plot(lr_precision_log, lr_recall_log, '--+', markersize=2, label='Logistic regression', color = "red")
+
+i = 0
+for m in results.keys():
+    if 'meta' in m:
+        auc = roc_auc_score(results[m]['val']['targs'],results[m]['val']['preds'])
+        axs[0].plot(results[m]['val']['fpr'], results[m]['val']['tpr'], markers[i], markersize=3, label= m + '- AUC: {}'.format(round(auc,2)))
+        axs[1].plot(results[m]['val']['pr'], results[m]['val']['recal'], markers[i], markersize=3, label= m)    
+        i +=1
+    #axs[1].plot(lr_precision_ada, lr_recall_ada, '--v', markersize=2, label='Adaboost', color = "green")
+#axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada,2)), color = "green")
+#axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - AUC: {}'.format(round(auc_high,2)), color = "blue")
+axs[0].set_xlabel('False Positive Rate')
+axs[0].set_ylabel('True Positive Rate')
+axs[0].set_title('ROC')
+axs[0].legend(fontsize=6)
+axs[1].set_ylabel('Recall')
+axs[1].set_xlabel('Precission')
+axs[1].set_title('Precision-Recall')
+axs[1].legend(fontsize=6)
+plt.tight_layout()
+plt.savefig(plot_path + 'trained_meta_metrics.pdf', format='pdf')

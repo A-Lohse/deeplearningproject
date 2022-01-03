@@ -24,16 +24,18 @@ cd deeplearningproject
 pip install -r requirements.txt
  ```   
 
-To generate and run most outputs and models, you will have to download the embedding tensors from sentence-BERT (including a finetuned version) as these are to big to store on Github (links below). Place the tensors in the directory `/data/processed/`.
+To generate and run most outputs and models, you will have to download the embedding tensors from sentence-BERT (including a finetuned version) as these are to big to store on Github (links below). Place the tensors in the directory `/data/processed/` .
 * [sentence-BERT embeddings](gdrive)
 * [finetuned sentence-BERT embeddings](gdrive)
 
 If you just want to replicate the plots and tables presented in the paper then
 ```bash
-# module folder
-cd notebooks
+# src folder 
+cd make_plot 
 ```
-and run the notebook `analysis.ipynb` which loads the trained models from the directory `/trained_models`. If you instead want to train the models then you can run the following commands
+and run  `baseline_models_and_plots.py` which loads the trained models from the directory `/trained_models`. It prints metrics to console and creates plots and tables in '/plots_tables' 
+
+If you instead want to train the models then you can run the following commands
 ```bash
 # module folder
 python3 -m src.train_sbert_downstream
@@ -69,6 +71,13 @@ The Bill text data used to finetune BERT and extract bill Embeddings comes from 
 **4. Extracting Bill Embeddings**
 
 To extract the Bill Embeddings we feed to the downstream tasks we pass the data prepared in step 2 to Sentence-BERT.  
+
+**5. Train models**
+Not part of prepare data - but needs to be done before running the last prepare data scipt
+
+**6. Predict on data** 
+Run make_predictions.py in /prepare_data.py - This will create a predictions.pkl file in the data/results folder. This file contains a dictionary with all the model names as keys, and contains targets, predicted, probas and false/negative positive rate as well as precision recall curve
+
 
 
 ## References
