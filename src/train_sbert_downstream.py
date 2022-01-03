@@ -25,10 +25,10 @@ warnings.filterwarnings("ignore")
 weighted_sampler = True
 criterion_class_weights = False
 auto_lr = False #Use lightning to find optimal lr
-lr = 1e-3
+lr = 1e-4
 dropout_rate = 0.2
 monitor_metric = 'val_prauc' #area under the precision-recall curve
-finetuned_embs = True
+finetuned_embs = False
 #-----------------#
 
 def train_models():
@@ -78,7 +78,7 @@ def train_models():
     test_metrics = dict()
     for model_name, model in models.items():
         if finetuned_embs:
-            model_name += 'finetuned_embs'
+            model_name += '_finetuned_embs'
         print('-'*66)
         print(f'Training: {model_name}')
         print('-'*66)
@@ -102,7 +102,10 @@ def train_models():
             # for tuner to work
             batch = next(iter(dm.train_dataloader()))
             model.train()
-            model.forward(batch[0].float(), batch[1].float())
+            try:
+                model.forward(batch[0].float(), batch[1].float())
+            except:
+                model.forward(batch[0].float())
             #find best learning rate
             trainer.tune(model, train_dataloader=dm.train_dataloader())
         
