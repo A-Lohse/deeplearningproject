@@ -41,7 +41,7 @@ for m in os.listdir(model_path):
                 my_model = SBertDsFNN(include_meta = False)
                 
         model = m
-        dm = sbert_downstream_datamodule.SbertDSDataModule(data_path = data_path)
+        dm = sbert_downstream_datamodule.SbertDSDataModule(data_path = data_path + "processed")
         dm.setup()
     
         #make the net

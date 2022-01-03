@@ -38,7 +38,7 @@ if tex:
 
 
 
-path = 'data\\' 
+path = 'data\\processed\\' 
 
 model_path = "trained_models\\baseline\\" 
 
