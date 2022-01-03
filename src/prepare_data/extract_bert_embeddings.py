@@ -12,6 +12,16 @@ from typing import List
 import torch
 from sentence_transformers import SentenceTransformer
 
+# if fintuned model is used
+fine_tuned_sbert = True
+
+if fine_tuned_sbert:
+    sBERT = SentenceTransformer('trained_models/finetuned_sbert')
+    prefix = 'fine_tuned_sbert_'
+else:
+    sBERT = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
+    prefix = 'sbert_'
+
 #verify if CUDA is available
 print(f'Running CUDA on GPU: {torch.cuda.is_available()}')
 #set path bert data
@@ -21,7 +31,6 @@ processed_path = 'data/processed/'
 #Load the SentenceTransformer model
 print('Loading Sentence Transformer model...')
 #Load in pre-trained sBERT model
-sBERT = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
 #Or read in fine-tuned sBERT model
 #sBERT = SentenceTransformer('changepathhere')
 def docsents_embeddings(model:SentenceTransformer, docs:List[list],
@@ -38,11 +47,16 @@ def docsents_embeddings(model:SentenceTransformer, docs:List[list],
         N_docs x Max_sentences x 384 dimensional np.array with BERT embeddings
         for each document.
     """
-    emb = np.zeros((ndocs, maxsents, 384))
+    if fine_tuned_sbert:
+        emb_size = 768
+    else: 
+        emb_size = 384
+    emb = np.zeros((ndocs, maxsents, emb_size))
     for i, doc in enumerate(tqdm(docs)):
         for j, sent in enumerate(doc):
             emb[i,j,:] = model.encode(sent)
-    return torch.tensor(emb, dtype=torch.float)
+    emb = torch.tensor(emb, dtype=torch.float)
+    return emb[:,None,:,:]
 
 def main():
     print('Reading sBERT data...')
@@ -65,21 +79,17 @@ def main():
     embeddings = docsents_embeddings(sBERT, bill_docs, nbills, max_sents)
     labels = torch.tensor(bert_data['status'], dtype=torch.long)
     print(f'Finished creating embeddings matrix')
-    split = input('Split into training and test set? (y/n): ')
-    if split == 'y':
-        train_embs = embeddings[train_test_idx['train_idx']]
-        test_embs = embeddings[train_test_idx['test_idx']]
-        train_labels = labels[train_test_idx['train_idx']]
-        test_labels = labels[train_test_idx['test_idx']]
-        print(f'Saving training and test embeddings and labels to {processed_path}')
-        torch.save(train_embs, processed_path + 'bert_train_embs.pt')
-        torch.save(test_embs, processed_path + 'bert_test_embs.pt')
-        torch.save(train_labels, processed_path + 'bert_train_labels.pt')
-        torch.save(test_labels, processed_path + 'bert_test_labels.pt')
-    else:
-        print(f'Saving all embeddings and labels to {processed_path}')
-        torch.save(embeddings, processed_path + 'bert_embs.pt')
-        torch.save(labels, processed_path + 'bert_labels.pt')
+    
+    train_embs = embeddings[train_test_idx['train_idx']]
+    test_embs = embeddings[train_test_idx['test_idx']]
+    train_labels = labels[train_test_idx['train_idx']]
+    test_labels = labels[train_test_idx['test_idx']]
+    print(f'Saving training and test embeddings and labels to {processed_path}')
+    torch.save(train_embs, processed_path + prefix + 'train_embs_103-114.pt')
+    torch.save(test_embs, processed_path +  prefix + 'test_embs_103-114.pt')
+    torch.save(train_labels, processed_path + prefix + 'train_labels_115.pt')
+    torch.save(test_labels, processed_path + prefix + 'test_labels_115.pt')
+  
     print('FINISHED!')
 
 if __name__ == '__main__':
