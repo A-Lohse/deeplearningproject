@@ -72,11 +72,13 @@ The Bill text data used to finetune BERT and extract bill Embeddings comes from 
 
 To extract the Bill Embeddings we feed to the downstream tasks we pass the data prepared in step 2 to Sentence-BERT.  
 
+**Extra: getting reuslts for plots and tables**
+If you wish to train new models, and obtain create new results, plots and tables, prepare the data as described, then: 
 **5. Train models**
-Not part of prepare data - but needs to be done before running the last prepare data scipt
+Place them in `/trained models´ - make sure that they are named with "meta" and "CNN" or "FNN" as well as "avg" if you average the the sentence embeddings in the FNN. This will make sure that the models are loaded correctly in the next step
 
 **6. Predict on data** 
-Run make_predictions.py in /prepare_data.py - This will create a predictions.pkl file in the data/results folder. This file contains a dictionary with all the model names as keys, and contains targets, predicted, probas and false/negative positive rate as well as precision recall curve
+Run make_predictions.py in /prepare_data.py - This will create a predictions.pkl file in the data/results folder. This file contains a dictionary with all the model names as keys, and contains targets, predicted, probas and false/negative positive rate as well as precision recall curve. This file is used for plotting and creating tables
 
 
 
