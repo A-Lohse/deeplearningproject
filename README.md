@@ -33,7 +33,7 @@ If you just want to replicate the plots and tables presented in the paper then
 # src folder 
 cd make_plot 
 ```
-and run  `baseline_models_and_plots.py` which loads the trained models from the directory `/trained_models`. It prints metrics to console and creates plots and tables in '/plots_tables' 
+and run  `baseline_models_and_plots.py` which loads the trained models from the directory `/trained_models`. It prints metrics to console and creates plots and tables in `/plots_tables` 
 
 If you instead want to train the models then you can run the following commands
 ```bash
