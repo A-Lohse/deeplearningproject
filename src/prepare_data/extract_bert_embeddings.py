@@ -17,7 +17,7 @@ fine_tuned_sbert = True
 
 if fine_tuned_sbert:
     sBERT = SentenceTransformer('trained_models/finetuned_sbert')
-    prefix = 'fine_tuned_sbert_'
+    prefix = 'finetuned_sbert_'
 else:
     sBERT = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
     prefix = 'sbert_'
@@ -47,11 +47,8 @@ def docsents_embeddings(model:SentenceTransformer, docs:List[list],
         N_docs x Max_sentences x 384 dimensional np.array with BERT embeddings
         for each document.
     """
-    if fine_tuned_sbert:
-        emb_size = 768
-    else: 
-        emb_size = 384
-    emb = np.zeros((ndocs, maxsents, emb_size))
+    
+    emb = np.zeros((ndocs, maxsents, 384))
     for i, doc in enumerate(tqdm(docs)):
         for j, sent in enumerate(doc):
             emb[i,j,:] = model.encode(sent)
@@ -64,8 +61,7 @@ def main():
     print(f"Saving training and test indices to {processed_path + 'train_test_indices.pickle'}")
     train_test_idx = {'train_idx':bert_data.loc[bert_data['cong'] != 115].index.tolist(),
                       'test_idx':bert_data.loc[bert_data['cong'] == 115].index.tolist()}
-    with open(processed_path + 'bert_train_test_idx.pickle', 'wb') as f:
-        pickle.dump(train_test_idx, f)
+    
     #Extract the bill documents
     bill_docs = bert_data['sentences'].tolist()
     #Extract the number of bills and max number of sentences 
@@ -85,10 +81,14 @@ def main():
     train_labels = labels[train_test_idx['train_idx']]
     test_labels = labels[train_test_idx['test_idx']]
     print(f'Saving training and test embeddings and labels to {processed_path}')
-    torch.save(train_embs, processed_path + prefix + 'train_embs_103-114.pt')
-    torch.save(test_embs, processed_path +  prefix + 'test_embs_103-114.pt')
-    torch.save(train_labels, processed_path + prefix + 'train_labels_115.pt')
-    torch.save(test_labels, processed_path + prefix + 'test_labels_115.pt')
+    torch.save(train_embs, processed_path + prefix + 'train_103-114.pt')
+    torch.save(test_embs, processed_path +  prefix + 'test_115.pt')
+    try:
+        torch.load(processed_path + prefix + 'labels_train_103-114.pt')
+        torch.load(test_labels, processed_path + prefix + 'labels_test_115.pt')
+    except:
+        torch.save(train_labels, processed_path + prefix + 'labels_train_103-114.pt')
+        torch.save(test_labels, processed_path + prefix + 'labels_test_115.pt')
   
     print('FINISHED!')
 
