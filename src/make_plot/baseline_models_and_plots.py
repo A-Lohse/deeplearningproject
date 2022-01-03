@@ -27,7 +27,7 @@ from random import choices
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import AdaBoostClassifier
 
-from src.make_plot.data_utils import straitified_train_validation_split, dataloader, metrics
+from src.make_plot.data_utils import straitified_train_validation_split, dataloader, metrics, tex_table
 
 
 tex = False #if true installs tex and the science style, which is not om colab - takes a littel while 
@@ -70,6 +70,9 @@ else:
   test_labels = torch.load(path + 'labels_test_115.pt')
   labels_train, labels_train, labels_val, labels_val = straitified_train_validation_split(labels_train, labels_train)
 
+
+
+baseline_tab = pd.DataFrame()
 """Naive baseline"""
 
 share = sum(labels_train.numpy() == 1) / len(labels_train) 
@@ -85,7 +88,10 @@ random_val = [0] * len(labels_val) #predict the largest class
 random_test =[0] * len(test_labels) #predict largest class
 
 metrics(labels_val, random_val, test_labels, random_test)
-
+x = tex_table(labels_val, random_val, test_labels, random_test, 
+            name = 'Naive',
+            path = "plots_tables\\" + 'Naive')
+baseline_tab = baseline_tab.append(x)
 
 run_log_only_meta = False
 '''only meta logistic'''
@@ -109,6 +115,14 @@ else:
         test_preds = np.load(f)
 
 metrics(labels_val, val_preds, test_labels, test_preds)
+
+
+x = tex_table(labels_val, val_preds, test_labels, test_preds, 
+            name = 'Only meta',
+            path = "plots_tables\\" + 'Only meta')
+baseline_tab = baseline_tab.append(x)
+
+
 auc_log_only_meta = roc_auc_score(labels_val, val_preds)
 auc_log_only_meta_test = roc_auc_score(test_labels, test_preds)
 
@@ -162,6 +176,12 @@ else: #load in the model and the predicitons
 
 metrics(labels_val, val_preds, test_labels, test_preds)
 
+x = tex_table(labels_val, val_preds, test_labels, test_preds, 
+            name = 'Log. Reg',
+            path = "plots_tables\\" + 'Log. Reg.')
+baseline_tab = baseline_tab.append(x)
+
+
 auc_log = roc_auc_score(labels_val, val_preds)
 auc_log_test = roc_auc_score(test_labels, test_preds)
 
@@ -213,6 +233,10 @@ else: #load in the model and the predicitons
     test_preds =  np.load(f)
 
 metrics(labels_val, val_preds, test_labels, test_preds)
+x = tex_table(labels_val, val_preds, test_labels, test_preds, 
+            name = 'Log. Reg. meta',
+            path = "plots_tables\\" + 'Log. Reg. meta')
+baseline_tab = baseline_tab.append(x)
 
 auc_log_meta = roc_auc_score(labels_val, val_preds)
 auc_log_meta_test = roc_auc_score(test_labels, test_preds)
@@ -269,6 +293,10 @@ else:
     test_preds = np.load(f)
 
 metrics(labels_val, val_preds, test_labels, test_preds)
+x = tex_table(labels_val, val_preds, test_labels, test_preds, 
+            name = 'Adaboost',
+            path = "plots_tables\\" + 'Adaboost')
+baseline_tab = baseline_tab.append(x)
 
 
 auc_ada = roc_auc_score(labels_val, val_preds)
@@ -323,7 +351,10 @@ else:
     test_preds = np.load(f)
 
 metrics(labels_val, val_preds, test_labels, test_preds)
-
+x = tex_table(labels_val, val_preds, test_labels, test_preds, 
+            name = 'Adaboost meta',
+            path = "plots_tables\\" + 'Adaboost meta')
+baseline_tab = baseline_tab.append(x)
 auc_ada_meta = roc_auc_score(labels_val, val_preds)
 auc_ada_meta_test = roc_auc_score(test_labels, test_preds)
 
@@ -416,7 +447,7 @@ auc_high = roc_auc_score(test_labels, ns_probs)
 #with plt.style.context('science'):
 fig, axs = plt.subplots(ncols = 2, dpi = 500, figsize=(8,3))
 #with plt.style.context('science'):
-axs[0].plot(lr_fpr_log_test, lr_tpr_log_test, '--+', markersize=2, label='Logistic regression (only meta) - AUC: {}'.format(round(auc_log_only_meta_test,2)), color = "black")
+axs[0].plot(lr_fpr_log_test, lr_tpr_log_test, '--+', markersize=2, label='Logistic regression - AUC: {}'.format(round(auc_log_test,2)), color = "red")
 axs[0].plot(lr_fpr_ada_test, lr_tpr_ada_test, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada_test,2)), color = "green")
 axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - AUC: {}'.format(round(auc_high,2)), color = "blue")
 axs[0].set_xlabel('False Positive Rate')
@@ -437,7 +468,8 @@ axs[1].legend(fontsize=6)
 plt.tight_layout()
 plt.savefig(plot_path + 'baseline_test_metrics.pdf', format='pdf')
 
-#with plt.style.context('science'):
+#################################################### meta ##########################
+#with plt.style.context('science'): 
 fig, axs = plt.subplots(ncols = 2, dpi = 500, figsize=(8,3))
 #with plt.style.context('science'):
 axs[0].plot(lr_fpr_log_only_meta_test, lr_tpr_log_only_meta_test, '--+', markersize=2, label='Logistic regression (only meta) - AUC: {}'.format(round(auc_log_only_meta_test,2)), color = "black")
@@ -449,7 +481,7 @@ axs[0].set_ylabel('True Positive Rate')
 axs[0].set_title('ROC with meta data')
 axs[0].legend(fontsize=6)
 
-axs[1].plot(lr_precision_log_only_meta_test, lr_recall_log_only_meta_test, '--+', markersize=2, label='Logistic regression', color = "black")
+axs[1].plot(lr_precision_log_only_meta_test, lr_recall_log_only_meta_test, '--+', markersize=2, label='Logistic regression (only meta)', color = "black")
 axs[1].plot(lr_precision_log_meta_test, lr_recall_log_meta_test, '--+', markersize=2, label='Logistic regression', color = "red")
 axs[1].plot(lr_precision_ada_meta_test, lr_recall_ada_meta_test, '--v', markersize=2, label='Adaboost', color = "green")
 
@@ -671,5 +703,31 @@ plt.savefig(plot_path + 'CNN_generalization.pdf', format='pdf')
 
 
 
+############################################## create tables for appendix ###############
 
+dat = pd.DataFrame()
+for m in results.keys():
+            
+    #metrics
+    print(m)
+    x = tex_table(results[m]['val']['targs'],
+            results[m]['val']['preds'],
+            results[m]['test']['targs'],
+            results[m]['test']['preds'], 
+            name = m,
+            path = "plots_tables\\" + m)
+    dat = dat.append(x)
 
+with open("plots_tables\\all_trained_models.tex", 'w') as f:
+    f.write(dat.to_latex(index = True))
+
+with open("plots_tables\\all_baseline_models.tex", 'w') as f:
+    f.write(baseline_tab.to_latex(index = True))
+        
+########################################## create tables for paper ###########
+
+paper_base = baseline_tab.loc[['Naive Test','Only meta Test','Log. Reg. meta Test','Adaboost meta Test'], ['AUC',"Avg. pr","Recall","F1"]]
+
+with open("plots_tables\\paper_baseline_models.tex", 'w') as f:
+    f.write(paper_base.to_latex(index = True))
+        
