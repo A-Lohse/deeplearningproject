@@ -20,7 +20,6 @@ class SbertDataset(torch.utils.data.Dataset):
         embedding = self.embeddings[index]
         meta = self.meta[index]
         target = self.targets[index]
-        
         return embedding, meta, target
     
     def __len__(self):
@@ -35,12 +34,14 @@ class SbertDSDataModule(pl.LightningDataModule):
     
     def __init__(self, batch_size=16,
                 weighted_sampler=True,
+                finetuned_embs = False,
                 data_path='data/processed/',
                 ):
         super().__init__()
         self.batch_size = batch_size
         self.data_path = data_path
         self.weighted_sampler = weighted_sampler
+        self.finetuned_embs = finetuned_embs
 
     def straitified_train_validation_split(self, embeddings, meta,targets, val_size=0.2):
         """
@@ -81,7 +82,13 @@ class SbertDSDataModule(pl.LightningDataModule):
 
     def setup(self):
         # read tensors for training and val
-        bert_train = torch.load(self.data_path + 'bert_train_103-114.pt')
+        if self.finetuned_embs:
+            bert_train = torch.load(self.data_path + 'fine_tuned_sbert_train_103-114.pt')
+            bert_test = torch.load(self.data_path + 'fine_tuned_sbert_test_115.pt')
+        else:
+            bert_train = torch.load(self.data_path + 'sbert_train_103-114.pt')
+            bert_test = torch.load(self.data_path + 'sbert_test_115.pt')
+
         meta_train = torch.load(self.data_path + 'meta_train_103-114.pt')
         targets_train = torch.load(self.data_path + 'labels_train_103-114.pt')
                            
@@ -93,7 +100,7 @@ class SbertDSDataModule(pl.LightningDataModule):
         self.class_weights = self.compute_weights(self.train[2], weight_type='class')
         self.sampler = WeightedRandomSampler(sampling_weights, num_samples=len(sampling_weights)) 
         # read tensors for test
-        self.test = (torch.load(self.data_path + 'bert_test_115.pt'), 
+        self.test = (bert_test, 
                      torch.load(self.data_path + 'meta_test_115.pt'), 
                      torch.load(self.data_path + 'labels_test_115.pt'))
 
