@@ -50,7 +50,6 @@ Where the flag `--finetuned_embeddings` indicates if the finetuned embeddings sh
 Several modules under `/src/prepare_data/` are used to prepare the data for our models. This includes data cleaning, finetuning both sentence-BERT and vanilla BERT and extracting document embeddings. Below follows an overview of what they do.
 
 **1. Generating metadata**
-
 Apart from the Bill text we include the following metadata
 
 * `bill_status (outcome variable)`: Dummy of bill status (1 if enacted, 0 otherwise)
@@ -62,14 +61,14 @@ Apart from the Bill text we include the following metadata
 The data comes from the [Congressional Bills Project](http://congressionalbills.org/) and the original data can be downloaded [here](http://congressionalbills.org/download.html) and is prepared using the script `generate_metadata.py`. 
 
 **2. Generate finetuning and embedding extraction data for BERT/S-BERT**
-
 The Bill text data used to finetune BERT and extract bill Embeddings comes from the [BillSum](https://github.com/FiscalNote/BillSum) project. Specifically the two datafiles `data/raw/us_train_sent_scores.pkl` and `data/raw/us_train_sent_scores.pkl` are used. The module `generate_bert_finetuning_data.py` extracts the relevant text from BillSum data and merges it with the bill with meta data, including if the Bill was enacted or not through the unique bill ID. 
 
 **3. Finetuning sentence-BERT**
-
+A python script has been prepared for finetuning sentence BERT. It can be found in `/src/prepare_data/fine-tuning_SBERT.py`
+The fine-tuned model is stored locally, when running the script. It will output validation metrics each epoch. 
+We have made our final fine-tuned model accesible through [Google Drive](https://drive.google.com/drive/folders/1og5VgL5DlmwxzBnCnGKRXbpRmowSSbK5?usp=sharing). In the zip-file their is a README explaining how to use the model. 
 
 **4. Extracting Bill Embeddings**
-
 To extract the Bill Embeddings we feed to the downstream tasks we pass the data prepared in step 2 to Sentence-BERT.  
 
 **Extra: getting reuslts for plots and tables**
