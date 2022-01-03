@@ -4,7 +4,7 @@ import torch
 import pytorch_lightning as pl
 import torchmetrics.functional as M
 import numpy as np
-from models.sbert_downstream_base import SBertDsBase
+from src.models.sbert_downstream_base import SBertDsBase
 
 class SBertDsFNN(SBertDsBase):
     """
@@ -45,7 +45,7 @@ class SBertDsFNN(SBertDsBase):
         else:
             x_emb = torch.flatten(x_emb, 1)
         
-        if self.include_meta or x_meta is not None:
+        if self.include_meta:
             x = torch.cat([x_emb, x_meta], dim=1)
         else:
             x = x_emb
