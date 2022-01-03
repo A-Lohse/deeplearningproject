@@ -41,7 +41,6 @@ If you instead want to train the models then you can run the following commands
 python3 -m src.train_sbert_downstream
 python3 -m src.train_sbert_downstream --finetuned_embeddings
 python3 -m src.train_vanilla_bert
-python3 -m src.train_baseline??
 ```
 Where the flag `--finetuned_embeddings` indicates if the finetuned embeddings should be used or not. 
 
