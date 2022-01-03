@@ -48,7 +48,7 @@ plot_path = 'plots_tables\\'
 
 """#Indlæser data"""
 
-rerun_baseline = True #saves new prediction probas
+rerun_baseline = False #saves new prediction probas
 
 if rerun_baseline:
   bert_train = torch.load(path + 'bert_train_103-114.pt')
@@ -87,7 +87,7 @@ random_test =[0] * len(test_labels) #predict largest class
 metrics(labels_val, random_val, test_labels, random_test)
 
 
-run_log_only_meta = True
+run_log_only_meta = False
 '''only meta logistic'''
 if run_log_only_meta:
     clf_log_only_meta = LogisticRegression(random_state = 0, class_weight = 'balanced').fit(meta_train.numpy(), labels_train)
@@ -110,21 +110,30 @@ else:
 
 metrics(labels_val, val_preds, test_labels, test_preds)
 auc_log_only_meta = roc_auc_score(labels_val, val_preds)
+auc_log_only_meta_test = roc_auc_score(test_labels, test_preds)
 
 
 if rerun_baseline:
-  preds = clf_log_only_meta.predict_proba(meta_train.numpy())
+  preds = clf_log_only_meta.predict_proba(meta_val.numpy())
   with open(result_path + 'logreg_only_meta_val_probas.npy', 'wb') as f:
     np.save(f,preds)
+    
+  preds_test = clf_log_only_meta.predict_proba(meta_test.numpy())
+  with open(result_path + 'logreg_only_meta_test_probas.npy', 'wb') as f:
+    np.save(f,preds_test)
 else:
   with open(result_path + 'logreg_only_meta_val_probas.npy', 'rb') as f:
       preds = np.load(f)
+  with open(result_path + 'logreg_only_meta_test_probas.npy', 'rb') as f:
+      preds_test = np.load(f)
       
 lr_precision_log_only_meta, lr_recall_log_only_meta , _ = precision_recall_curve(labels_val, preds[:,1])
 lr_fpr_log_only_meta, lr_tpr_log_only_meta, _ = roc_curve(labels_val, preds[:,1])
 
-if rerun_baseline:
-    exit()
+lr_precision_log_only_meta_test, lr_recall_log_only_meta_test , _ = precision_recall_curve(test_labels, preds_test[:,1])
+lr_fpr_log_only_meta_test, lr_tpr_log_only_meta_test, _ = roc_curve(test_labels, preds_test[:,1])
+
+
 """## Logistic regression"""
 
 run_log = False #run logistic regression?
@@ -153,19 +162,29 @@ else: #load in the model and the predicitons
 
 metrics(labels_val, val_preds, test_labels, test_preds)
 
-
 auc_log = roc_auc_score(labels_val, val_preds)
+auc_log_test = roc_auc_score(test_labels, test_preds)
+
 
 if rerun_baseline:
   preds = clf_log.predict_proba(torch.squeeze(torch.mean(bert_val, axis = 2)).numpy())
   with open(result_path + 'logreg_val_probas.npy', 'wb') as f:
     np.save(f,preds)
+    
+  preds_test = clf_log.predict_proba(torch.squeeze(torch.mean(test_dataset, axis = 2)).numpy())
+  with open(result_path + 'logreg_test_probas.npy', 'wb') as f:
+    np.save(f,preds_test) 
 else:
   with open(result_path + 'logreg_val_probas.npy', 'rb') as f:
       preds = np.load(f)  
+  with open(result_path + 'logreg_test_probas.npy', 'rb') as f:
+      preds_test = np.load(f)  
 
 lr_precision_log, lr_recall_log , _ = precision_recall_curve(labels_val, preds[:,1])
 lr_fpr_log, lr_tpr_log, _ = roc_curve(labels_val, preds[:,1])
+
+lr_precision_log_test, lr_recall_log_test , _ = precision_recall_curve(test_labels, preds_test[:,1])
+lr_fpr_log_test, lr_tpr_log_test, _ = roc_curve(test_labels, preds_test[:,1])
 
 """## logistic regression with meta"""
 
@@ -196,17 +215,28 @@ else: #load in the model and the predicitons
 metrics(labels_val, val_preds, test_labels, test_preds)
 
 auc_log_meta = roc_auc_score(labels_val, val_preds)
+auc_log_meta_test = roc_auc_score(test_labels, test_preds)
+
 
 if rerun_baseline:
   preds = clf_log_meta.predict_proba(np.append(torch.squeeze(torch.mean(bert_val, axis = 2)).numpy(), meta_val.numpy(), axis = 1))
   with open(result_path + 'logreg_val_meta_probas.npy', 'wb') as f:
    np.save(f,preds)
+  preds_test = clf_log_meta.predict_proba(np.append(torch.squeeze(torch.mean(test_dataset, axis = 2)).numpy(), meta_test.numpy(), axis = 1))
+  with open(result_path + 'logreg_test_meta_probas.npy', 'wb') as f:
+   np.save(f,preds_test)   
+   
 else:
   with open(result_path + 'logreg_val_meta_probas.npy', 'rb') as f:
     preds = np.load(f)  
+  with open(result_path + 'logreg_test_meta_probas.npy', 'rb') as f:
+    preds_test = np.load(f)  
 
 lr_precision_log_meta, lr_recall_log_meta , _ = precision_recall_curve(labels_val, preds[:,1])
 lr_fpr_log_meta, lr_tpr_log_meta, _ = roc_curve(labels_val, preds[:,1])
+
+lr_precision_log_meta_test, lr_recall_log_meta_test , _ = precision_recall_curve(test_labels, preds_test[:,1])
+lr_fpr_log_meta_test, lr_tpr_log_meta_test, _ = roc_curve(test_labels, preds_test[:,1])
 
 """## Adaboost 
 
@@ -242,17 +272,27 @@ metrics(labels_val, val_preds, test_labels, test_preds)
 
 
 auc_ada = roc_auc_score(labels_val, val_preds)
+auc_ada_test = roc_auc_score(test_labels, test_preds)
+
 
 if rerun_baseline:
   preds = clf_ada.predict_proba(torch.squeeze(torch.mean(bert_val, axis = 2)).numpy())
   with open(result_path + 'ada_val_probas.npy', 'wb') as f:
    np.save(f,preds)
+  preds_test = clf_ada.predict_proba(torch.squeeze(torch.mean(test_dataset, axis = 2)).numpy())
+  with open(result_path + 'ada_test_probas.npy', 'wb') as f:
+   np.save(f,preds_test)
 else:
   with open(result_path + 'ada_val_probas.npy', 'rb') as f:
     preds = np.load(f)  
-
+  with open(result_path + 'ada_test_probas.npy', 'rb') as f:
+    preds_test = np.load(f)  
+    
 lr_precision_ada, lr_recall_ada , _ = precision_recall_curve(labels_val, preds[:,1])
 lr_fpr_ada, lr_tpr_ada, _ = roc_curve(labels_val, preds[:,1])
+
+lr_precision_ada_test, lr_recall_ada_test , _ = precision_recall_curve(test_labels, preds_test[:,1])
+lr_fpr_ada_test, lr_tpr_ada_test, _ = roc_curve(test_labels, preds_test[:,1])
 
 """## Adaboost with metadata"""
 
@@ -285,22 +325,32 @@ else:
 metrics(labels_val, val_preds, test_labels, test_preds)
 
 auc_ada_meta = roc_auc_score(labels_val, val_preds)
+auc_ada_meta_test = roc_auc_score(test_labels, test_preds)
+
 
 if rerun_baseline:        
   preds = clf_ada_meta.predict_proba(np.append(torch.squeeze(torch.mean(bert_val, axis = 2)).numpy(), meta_val.numpy(), axis = 1))
   with open(result_path + 'ada_meta_val_probas.npy', 'wb') as f:
    np.save(f,preds)
+  preds_test = clf_ada_meta.predict_proba(np.append(torch.squeeze(torch.mean(test_dataset, axis = 2)).numpy(), meta_test.numpy(), axis = 1))
+  with open(result_path + 'ada_meta_test_probas.npy', 'wb') as f:
+   np.save(f,preds_test)
 else:
   with open(result_path + 'ada_meta_val_probas.npy', 'rb') as f:
       preds = np.load(f)  
+  with open(result_path + 'ada_meta_test_probas.npy', 'rb') as f:
+      preds_test = np.load(f)  
 
 lr_precision_ada_meta, lr_recall_ada_meta , _ = precision_recall_curve(labels_val, preds[:,1])
 lr_fpr_ada_meta, lr_tpr_ada_meta, _ = roc_curve(labels_val, preds[:,1])
 
 
+lr_precision_ada_meta_test, lr_recall_ada_meta_test , _ = precision_recall_curve(test_labels, preds_test[:,1])
+lr_fpr_ada_meta_test, lr_tpr_ada_meta_test, _ = roc_curve(test_labels, preds_test[:,1])
+
 """Plots"""
 
-
+####################################################Validation######################
 ns_probs = [0.0346 for _ in range(len(labels_val))] #set to the random chance of 1
 ns_fpr, ns_tpr, _ = roc_curve(labels_val, ns_probs)
 auc_high = roc_auc_score(labels_val, ns_probs)
@@ -334,6 +384,7 @@ auc_high = roc_auc_score(labels_val, ns_probs)
 #with plt.style.context('science'):
 fig, axs = plt.subplots(ncols = 2, dpi = 500, figsize=(8,3))
 #with plt.style.context('science'):
+axs[0].plot(lr_fpr_log_only_meta, lr_tpr_log_only_meta, '--+', markersize=2, label='Logistic regression (only meta) - AUC: {}'.format(round(auc_log_only_meta,2)), color = "black")
 axs[0].plot(lr_fpr_log_meta, lr_tpr_log_meta, '--+', markersize=2, label='Logistic regression - AUC: {}'.format(round(auc_log_meta,2)), color = "red")
 axs[0].plot(lr_fpr_ada_meta, lr_tpr_ada_meta, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada_meta,2)), color = "green")
 axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - AUC: {}'.format(round(auc_high,2)), color = "blue")
@@ -342,6 +393,7 @@ axs[0].set_ylabel('True Positive Rate')
 axs[0].set_title('ROC with meta data')
 axs[0].legend(fontsize=6)
 
+axs[1].plot(lr_precision_log_only_meta, lr_recall_log_only_meta, '--+', markersize=2, label='Logistic regression (only meta)', color = "black")
 axs[1].plot(lr_precision_log_meta, lr_recall_log_meta, '--+', markersize=2, label='Logistic regression', color = "red")
 axs[1].plot(lr_precision_ada_meta, lr_recall_ada_meta, '--v', markersize=2, label='Adaboost', color = "green")
 
@@ -355,6 +407,65 @@ axs[1].legend(fontsize=6)
 plt.tight_layout()
 plt.savefig(plot_path + 'baseline_meta_metrics.pdf', format='pdf')
 
+
+################################################################# Test
+
+ns_probs = [0.0346 for _ in range(len(test_labels))] #set to the random chance of 1
+ns_fpr, ns_tpr, _ = roc_curve(test_labels, ns_probs)
+auc_high = roc_auc_score(test_labels, ns_probs)
+#with plt.style.context('science'):
+fig, axs = plt.subplots(ncols = 2, dpi = 500, figsize=(8,3))
+#with plt.style.context('science'):
+axs[0].plot(lr_fpr_log_test, lr_tpr_log_test, '--+', markersize=2, label='Logistic regression (only meta) - AUC: {}'.format(round(auc_log_only_meta_test,2)), color = "black")
+axs[0].plot(lr_fpr_ada_test, lr_tpr_ada_test, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada_test,2)), color = "green")
+axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - AUC: {}'.format(round(auc_high,2)), color = "blue")
+axs[0].set_xlabel('False Positive Rate')
+axs[0].set_ylabel('True Positive Rate')
+axs[0].set_title('ROC')
+axs[0].legend(fontsize=6)
+
+axs[1].plot(lr_precision_log_test, lr_recall_log_test, '--+', markersize=2, label='Logistic regression', color = "red")
+axs[1].plot(lr_precision_ada_test, lr_recall_ada_test, '--v', markersize=2, label='Adaboost', color = "green")
+
+random = no_skill = len([t for t in labels_val if t ==1]) / len(labels_val)
+#pr_rand, recall_rand, _ = precision_recall_curve(labels_val, ns_probs)
+axs[1].plot([0,1], [random,random], linestyle='-.', label='Random Classifier', color = "blue")
+axs[1].set_ylabel('Recall')
+axs[1].set_xlabel('Precission')
+axs[1].set_title('Precision-Recall')
+axs[1].legend(fontsize=6)
+plt.tight_layout()
+plt.savefig(plot_path + 'baseline_test_metrics.pdf', format='pdf')
+
+#with plt.style.context('science'):
+fig, axs = plt.subplots(ncols = 2, dpi = 500, figsize=(8,3))
+#with plt.style.context('science'):
+axs[0].plot(lr_fpr_log_only_meta_test, lr_tpr_log_only_meta_test, '--+', markersize=2, label='Logistic regression (only meta) - AUC: {}'.format(round(auc_log_only_meta_test,2)), color = "black")
+axs[0].plot(lr_fpr_log_meta_test, lr_tpr_log_meta_test, '--+', markersize=2, label='Logistic regression - AUC: {}'.format(round(auc_log_meta_test,2)), color = "red")
+axs[0].plot(lr_fpr_ada_meta_test, lr_tpr_ada_meta_test, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada_meta_test,2)), color = "green")
+axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - AUC: {}'.format(round(auc_high,2)), color = "blue")
+axs[0].set_xlabel('False Positive Rate')
+axs[0].set_ylabel('True Positive Rate')
+axs[0].set_title('ROC with meta data')
+axs[0].legend(fontsize=6)
+
+axs[1].plot(lr_precision_log_only_meta_test, lr_recall_log_only_meta_test, '--+', markersize=2, label='Logistic regression', color = "black")
+axs[1].plot(lr_precision_log_meta_test, lr_recall_log_meta_test, '--+', markersize=2, label='Logistic regression', color = "red")
+axs[1].plot(lr_precision_ada_meta_test, lr_recall_ada_meta_test, '--v', markersize=2, label='Adaboost', color = "green")
+
+random = no_skill = len([t for t in labels_val if t ==1]) / len(labels_val)
+#pr_rand, recall_rand, _ = precision_recall_curve(labels_val, ns_probs)
+axs[1].plot([0,1], [random,random], linestyle='-.', label='Random Classifier', color = "blue")
+axs[1].set_ylabel('Recall')
+axs[1].set_xlabel('Precission')
+axs[1].set_title('Precision-Recall with meta data')
+axs[1].legend(fontsize=6)
+plt.tight_layout()
+plt.savefig(plot_path + 'baseline_test_meta_metrics.pdf', format='pdf')
+
+
+
+######################################################################loss#################
 """import losses"""
 
 df = pd.read_pickle(result_path + "train_val_metrics_2021-12-31.pkl")
@@ -374,6 +485,9 @@ plt.tight_layout()
 plt.savefig(plot_path + 'train_losses.pdf', format='pdf')
 
 ######################################################## import predictions and do metrics and plots
+
+
+
 with open(result_path + "predictions.pkl", "rb") as f:
     results = pickle.load(f)
 
@@ -391,7 +505,7 @@ for m in results.keys():
             results[m]['test']['targs'],
             results[m]['test']['preds'])
     
-   
+####################################Validation################################   
 ####### non meta plot 
 
 markers = ['-+','-*','-^']
@@ -427,8 +541,8 @@ plt.savefig(plot_path + 'trained_metrics.pdf', format='pdf')
 
 fig, axs = plt.subplots(ncols = 2, dpi = 500, figsize=(8,3))
 #with plt.style.context('science'):
-axs[0].plot(lr_fpr_log, lr_tpr_log, '--+', markersize=2, label='Logistic regression - AUC: {}'.format(round(auc_log,2)), color = "red")
-axs[1].plot(lr_precision_log, lr_recall_log, '--+', markersize=2, label='Logistic regression', color = "red")
+axs[0].plot(lr_fpr_log_meta, lr_tpr_log_meta, '--+', markersize=2, label='Logistic regression - AUC: {}'.format(round(auc_log,2)), color = "red")
+axs[1].plot(lr_precision_log_meta, lr_recall_log_meta, '--+', markersize=2, label='Logistic regression', color = "red")
 
 i = 0
 for m in results.keys():
@@ -450,3 +564,69 @@ axs[1].set_title('Precision-Recall')
 axs[1].legend(fontsize=6)
 plt.tight_layout()
 plt.savefig(plot_path + 'trained_meta_metrics.pdf', format='pdf')
+
+
+
+######################################### test ###################################
+
+markers = ['-+','-*','-^']
+#with plt.style.context('science'):
+fig, axs = plt.subplots(ncols = 2, dpi = 500, figsize=(8,3))
+#with plt.style.context('science'):
+axs[0].plot(lr_fpr_log_test, lr_tpr_log_test, '--+', markersize=2, label='Logistic regression - AUC: {}'.format(round(auc_log_test,2)), color = "red")
+axs[1].plot(lr_precision_log_test, lr_recall_log_test, '--+', markersize=2, label='Logistic regression', color = "red")
+
+i = 0
+for m in results.keys():
+    if 'meta' not in m:
+        auc = roc_auc_score(results[m]['test']['targs'],results[m]['test']['preds'])
+        axs[0].plot(results[m]['test']['fpr'], results[m]['test']['tpr'], markers[i], markersize=3, label= m + '- AUC: {}'.format(round(auc,2)))
+        axs[1].plot(results[m]['test']['pr'], results[m]['test']['recal'], markers[i], markersize=3, label= m)
+        i+= 1
+    
+    #axs[1].plot(lr_precision_ada, lr_recall_ada, '--v', markersize=2, label='Adaboost', color = "green")
+#axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada,2)), color = "green")
+#axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - AUC: {}'.format(round(auc_high,2)), color = "blue")
+axs[0].set_xlabel('False Positive Rate')
+axs[0].set_ylabel('True Positive Rate')
+axs[0].set_title('ROC')
+axs[0].legend(fontsize=6)
+axs[1].set_ylabel('Recall')
+axs[1].set_xlabel('Precission')
+axs[1].set_title('Precision-Recall')
+axs[1].legend(fontsize=6)
+plt.tight_layout()
+plt.savefig(plot_path + 'trained_test_metrics.pdf', format='pdf')
+
+
+
+fig, axs = plt.subplots(ncols = 2, dpi = 500, figsize=(8,3))
+#with plt.style.context('science'):
+axs[0].plot(lr_fpr_log_meta_test, lr_tpr_log_meta_test, '--+', markersize=2, label='Logistic regression - AUC: {}'.format(round(auc_log_meta_test,2)), color = "red")
+axs[1].plot(lr_precision_log_meta_test, lr_recall_log_meta_test, '--+', markersize=2, label='Logistic regression', color = "red")
+
+i = 0
+for m in results.keys():
+    if 'meta' in m:
+        auc = roc_auc_score(results[m]['test']['targs'],results[m]['test']['preds'])
+        axs[0].plot(results[m]['test']['fpr'], results[m]['test']['tpr'], markers[i], markersize=3, label= m + '- AUC: {}'.format(round(auc,2)))
+        axs[1].plot(results[m]['test']['pr'], results[m]['test']['recal'], markers[i], markersize=3, label= m)    
+        i +=1
+    #axs[1].plot(lr_precision_ada, lr_recall_ada, '--v', markersize=2, label='Adaboost', color = "green")
+#axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada,2)), color = "green")
+#axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - AUC: {}'.format(round(auc_high,2)), color = "blue")
+axs[0].set_xlabel('False Positive Rate')
+axs[0].set_ylabel('True Positive Rate')
+axs[0].set_title('ROC')
+axs[0].legend(fontsize=6)
+axs[1].set_ylabel('Recall')
+axs[1].set_xlabel('Precission')
+axs[1].set_title('Precision-Recall')
+axs[1].legend(fontsize=6)
+plt.tight_layout()
+plt.savefig(plot_path + 'trained_meta_test_metrics.pdf', format='pdf')
+
+
+
+
+######################################### Comparison between validation and test##########################
