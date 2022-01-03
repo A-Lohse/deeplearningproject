@@ -1,19 +1,21 @@
 import os
 
 #need to set the dir the the base of the project 
-#os.chdir("C:\\Users\\tnv664\\OneDrive - University of Copenhagen\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject")
-os.chdir("C:\\Users\\augus\\OneDrive - Københavns Universitet\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\\src")
-from make_plot.data_utils import  metrics
+os.chdir("C:\\Users\\tnv664\\OneDrive - University of Copenhagen\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject")
+#os.chdir("C:\\Users\\augus\\OneDrive - Københavns Universitet\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\\src")
+from src.make_plot.data_utils import  metrics
 
-from models.sbert_downstream_CNN import SBertDsCNN
-from models.sbert_downstream_FNN import SBertDsFNN
-from data_modules import sbert_downstream_datamodule
+from src.models.sbert_downstream_CNN import SBertDsCNN
+from src.models.sbert_downstream_FNN import SBertDsFNN
+from src.data_modules import sbert_downstream_datamodule
 import torch
 import pickle
 from sklearn.metrics import precision_recall_curve, roc_curve
 
-model_path = "C:\\Users\\augus\\OneDrive - Københavns Universitet\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\\trained_models\\"
-data_path = "C:\\Users\\augus\\OneDrive - Københavns Universitet\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\\data\\"
+#model_path = "C:\\Users\\tnv664\\OneDrive - Københavns Universitet\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\\trained_models\\"
+#data_path = "C:\\Users\\tbv664\\OneDrive - Københavns Universitet\\Documents\\Uni\\Ph.D\\deep learning\\deeplearningproject\\data\\"
+data_path = "data\\"
+model_path = "trained_models\\"
 
 model_dict = {}
 
@@ -41,7 +43,7 @@ for m in os.listdir(model_path):
                 my_model = SBertDsFNN(include_meta = False)
                 
         model = m
-        dm = sbert_downstream_datamodule.SbertDSDataModule(data_path = data_path + "processed")
+        dm = sbert_downstream_datamodule.SbertDSDataModule(data_path = data_path + "processed\\")
         dm.setup()
     
         #make the net
@@ -53,13 +55,13 @@ for m in os.listdir(model_path):
     
         with torch.no_grad():
             for local_batch, local_meta, local_labels in dm.val_dataloader():
-                if "FNN" in m:
+                if "FNN" in m: #need to change the dim if it is FNN for CNN no need
                     if 'avg' in m:
                         local_batch = torch.mean(local_batch,axis = 2) #take the mean of the sentences in each document (dim 2 (with 0 indexing))
                         local_batch = torch.squeeze(local_batch) #remove the channel dim we put there for CNN
                     else:
                         local_batch.flatten(start_dim = 1) #concat the the input
-        
+                        
                 if 'meta' in m:        
                     outputs = net(local_batch.float(), local_meta.float())
                 else:
@@ -78,7 +80,7 @@ for m in os.listdir(model_path):
             ####TEST DATA####
         with torch.no_grad():
             for local_batch, local_meta, local_labels in dm.test_dataloader():
-                if "FNN" in m:
+                if "FNN" in m: #need to change the dim if it is FNN for CNN no need
                     if 'avg' in m:
                         local_batch = torch.mean(local_batch,axis = 2) #take the mean of the sentences in each document (dim 2 (with 0 indexing))
                         local_batch = torch.squeeze(local_batch) #remove the channel dim we put there for CNN
