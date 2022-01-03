@@ -476,11 +476,8 @@ figure(figsize=(4, 3), dpi= 500)
 
 for key in keys:
   plt.plot(range(len(df[key]['train_loss'])),df[key]['train_loss'], label = key + " loss : {}".format(round(df[key]['train_loss'].values[-1],2)))
-
 plt.title("Train Loss over epochs")
 plt.legend(fontsize=6)
-
-plt.show()
 plt.tight_layout()
 plt.savefig(plot_path + 'train_losses.pdf', format='pdf')
 
@@ -630,3 +627,49 @@ plt.savefig(plot_path + 'trained_meta_test_metrics.pdf', format='pdf')
 
 
 ######################################### Comparison between validation and test##########################
+
+
+fig, axs = plt.subplots(ncols = 2, dpi = 500, figsize=(8,3))
+#with plt.style.context('science'):
+#axs[0].plot(lr_fpr_log_meta_test, lr_tpr_log_meta_test, '--+', markersize=2, label='Logistic regression - AUC: {}'.format(round(auc_log_meta_test,2)), color = "red")
+#axs[1].plot(lr_precision_log_meta_test, lr_recall_log_meta_test, '--+', markersize=2, label='Logistic regression', color = "red")
+
+lab_val = ["CNN meta val","CNN val"]
+lab_test = ["CNN meta test","CNN test"]
+i = 0
+for m in results.keys():
+    if 'CNN' in m:
+        if 'meta' in m:
+            auc_val = roc_auc_score(results[m]['val']['targs'],results[m]['val']['preds'])
+            auc_test = roc_auc_score(results[m]['test']['targs'],results[m]['test']['preds'])
+
+            axs[0].plot(results[m]['test']['fpr'], results[m]['test']['tpr'], '--',color = "black", markersize=5, label= 'CNN meta test- AUC: {}'.format(round(auc_test,2)))
+            axs[1].plot(results[m]['test']['pr'], results[m]['test']['recal'], '-', color = "black", markersize=2, label= 'CNN meta test')    
+            axs[0].plot(results[m]['val']['fpr'], results[m]['val']['tpr'], '--*', color = "black", markersize=5, label= 'CNN meta val- AUC: {}'.format(round(auc_val,2)))
+            axs[1].plot(results[m]['val']['pr'], results[m]['val']['recal'], '--', color = "black", markersize=2, label= 'CNN meta val')  
+        else:
+            auc_val = roc_auc_score(results[m]['val']['targs'],results[m]['val']['preds'])
+            auc_test = roc_auc_score(results[m]['test']['targs'],results[m]['test']['preds'])
+    
+            axs[0].plot(results[m]['test']['fpr'], results[m]['test']['tpr'], '--',color = "red", markersize=5, label= 'CNN test- AUC: {}'.format(round(auc_test,2)))
+            axs[1].plot(results[m]['test']['pr'], results[m]['test']['recal'], '-', color = "red", markersize=2, label= 'CNN test')    
+            axs[0].plot(results[m]['val']['fpr'], results[m]['val']['tpr'], '--*', color = "red", markersize=5, label= 'CNN val- AUC: {}'.format(round(auc_val,2)))
+            axs[1].plot(results[m]['val']['pr'], results[m]['val']['recal'], '--', color = "red", markersize=2, label= 'CNN val')  
+    #axs[1].plot(lr_precision_ada, lr_recall_ada, '--v', markersize=2, label='Adaboost', color = "green")
+#axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada,2)), color = "green")
+#axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - AUC: {}'.format(round(auc_high,2)), color = "blue")
+axs[0].set_xlabel('False Positive Rate')
+axs[0].set_ylabel('True Positive Rate')
+axs[0].set_title('ROC')
+axs[0].legend(fontsize=6)
+axs[1].set_ylabel('Recall')
+axs[1].set_xlabel('Precission')
+axs[1].set_title('Precision-Recall')
+axs[1].legend(fontsize=6)
+plt.tight_layout()
+plt.savefig(plot_path + 'CNN_generalization.pdf', format='pdf')
+
+
+
+
+
