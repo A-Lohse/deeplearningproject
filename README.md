@@ -15,7 +15,7 @@
 This repository contains the code used for our project in the course **[02456 Deep Learning](https://github.com/DeepLearningDTU/02456-deep-learning-with-PyTorch)** at the Technical University of Denmark (DTU).
 
 ## How to run   
-First, install dependencies   
+First, clone the repository  
 ```bash
 # clone project   
 git clone https://github.com/A-Lohse/deeplearningproject
