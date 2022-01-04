@@ -39,10 +39,8 @@ If you instead want to train the models then you can run the following commands
 ```bash
 # module folder
 python3 -m src.train_sbert_downstream
-python3 -m src.train_sbert_downstream --finetuned_embeddings
-python3 -m src.train_vanilla_bert
 ```
-Where the flag `--finetuned_embeddings` indicates if the finetuned embeddings should be used or not. 
+Where the flag `--finetuned_embeddings` indicates if the finetuned embeddings should be used or not. The standard BERT can be trained using the notebook `finetuning-BERT.ipynb`.
 
 ### Extra
 
