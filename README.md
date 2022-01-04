@@ -21,7 +21,6 @@ First, install dependencies
 git clone https://github.com/A-Lohse/deeplearningproject
 # install project   
 cd deeplearningproject
-pip install -r requirements.txt
  ```   
 
 To generate and run most outputs and models, you will have to download the embedding tensors from sentence-BERT (including a finetuned version) as these are to big to store on Github (links below). Place the tensors in the directory `/data/processed/` .
