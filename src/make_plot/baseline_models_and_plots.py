@@ -87,8 +87,8 @@ weights = [0.9654, 0.0346]
 random_val = [0] * len(labels_val) #predict the largest class
 random_test =[0] * len(test_labels) #predict largest class
 
-apr_naive_val = average_precision_score(labels_val, random_val)
-apr_naive_test = average_precision_score(test_labels, random_test)
+PRAUC_naive_val = average_precision_score(labels_val, random_val)
+PRAUC_naive_test = average_precision_score(test_labels, random_test)
 
 metrics(labels_val, random_val, test_labels, random_test)
 x = tex_table(labels_val, random_val, test_labels, random_test, 
@@ -130,8 +130,8 @@ baseline_tab = baseline_tab.append(x)
 auc_log_only_meta = roc_auc_score(labels_val, val_preds)
 auc_log_only_meta_test = roc_auc_score(test_labels, test_preds)
 
-apr_log_only_meta = average_precision_score(labels_val, val_preds)
-apr_log_only_meta_test = average_precision_score(test_labels, test_preds)
+PRAUC_log_only_meta = average_precision_score(labels_val, val_preds)
+PRAUC_log_only_meta_test = average_precision_score(test_labels, test_preds)
 
 if rerun_baseline:
   preds = clf_log_only_meta.predict_proba(meta_val.numpy())
@@ -191,8 +191,8 @@ baseline_tab = baseline_tab.append(x)
 auc_log = roc_auc_score(labels_val, val_preds)
 auc_log_test = roc_auc_score(test_labels, test_preds)
 
-apr_log = average_precision_score(labels_val, val_preds)
-apr_log_test = average_precision_score(test_labels, test_preds)
+PRAUC_log = average_precision_score(labels_val, val_preds)
+PRAUC_log_test = average_precision_score(test_labels, test_preds)
 
 
 if rerun_baseline:
@@ -250,8 +250,8 @@ baseline_tab = baseline_tab.append(x)
 auc_log_meta = roc_auc_score(labels_val, val_preds)
 auc_log_meta_test = roc_auc_score(test_labels, test_preds)
 
-apr_log_meta = average_precision_score(labels_val, val_preds)
-apr_log_meta_test = average_precision_score(test_labels, test_preds)
+PRAUC_log_meta = average_precision_score(labels_val, val_preds)
+PRAUC_log_meta_test = average_precision_score(test_labels, test_preds)
 
 
 if rerun_baseline:
@@ -314,8 +314,8 @@ baseline_tab = baseline_tab.append(x)
 auc_ada = roc_auc_score(labels_val, val_preds)
 auc_ada_test = roc_auc_score(test_labels, test_preds)
 
-apr_ada = average_precision_score(labels_val, val_preds)
-apr_ada_test = average_precision_score(test_labels, test_preds)
+PRAUC_ada = average_precision_score(labels_val, val_preds)
+PRAUC_ada_test = average_precision_score(test_labels, test_preds)
 
 if rerun_baseline:
   preds = clf_ada.predict_proba(torch.squeeze(torch.mean(bert_val, axis = 2)).numpy())
@@ -373,8 +373,8 @@ baseline_tab = baseline_tab.append(x)
 auc_ada_meta = roc_auc_score(labels_val, val_preds)
 auc_ada_meta_test = roc_auc_score(test_labels, test_preds)
 
-apr_ada_meta = average_precision_score(labels_val, val_preds)
-apr_ada_meta_test = average_precision_score(test_labels, test_preds)
+PRAUC_ada_meta = average_precision_score(labels_val, val_preds)
+PRAUC_ada_meta_test = average_precision_score(test_labels, test_preds)
 
 if rerun_baseline:        
   preds = clf_ada_meta.predict_proba(np.append(torch.squeeze(torch.mean(bert_val, axis = 2)).numpy(), meta_val.numpy(), axis = 1))
@@ -405,23 +405,23 @@ auc_high = roc_auc_score(labels_val, ns_probs)
 #with plt.style.context('science'):
 fig, axs = plt.subplots( 2, dpi = 1200, figsize=(4, 6))
 #with plt.style.context('science'):
-axs[0].plot(lr_fpr_log, lr_tpr_log, '--+', markersize=2, label='Log. reg. - AUC: {}'.format(round(auc_log,2)), color = "red")
-axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada,2)), color = "green")
-axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Naive - AUC: {}'.format(round(auc_high,2)), color = "blue")
+axs[0].plot(lr_fpr_log, lr_tpr_log, '--+', markersize=2, label='Log. reg. - ROC-AUC: {}'.format(round(auc_log,2)), color = "red")
+axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - ROC-AUC: {}'.format(round(auc_ada,2)), color = "green")
+axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Naive - ROC-AUC: {}'.format(round(auc_high,2)), color = "blue")
 axs[0].set_xlabel('False Positive Rate')
 axs[0].set_ylabel('True Positive Rate')
 #axs[0].set_title('ROC and PR')
 
 axs[0].legend(fontsize=8)
 
-axs[1].plot(lr_precision_log, lr_recall_log, '--+', markersize=2, label='Log. reg. - APR: {}'.format(round(apr_log ,2)), color = "red")
-axs[1].plot(lr_precision_ada, lr_recall_ada, '--v', markersize=2, label='Adaboost - APR: {}'.format(round(apr_ada ,2)), color = "green")
+axs[1].plot(lr_precision_log, lr_recall_log, '--+', markersize=2, label='Log. reg. - PRAUC: {}'.format(round(PRAUC_log ,2)), color = "red")
+axs[1].plot(lr_precision_ada, lr_recall_ada, '--v', markersize=2, label='Adaboost - PRAUC: {}'.format(round(PRAUC_ada ,2)), color = "green")
 
 random = no_skill = len([t for t in labels_val if t ==1]) / len(labels_val)
 #pr_rand, recall_rand, _ = precision_recall_curve(labels_val, ns_probs)
-axs[1].plot([0,1], [random,random], linestyle='-.', label='Naive - APR: {}'.format(round(apr_naive_val ,2)), color = "blue")
+axs[1].plot([0,1], [random,random], linestyle='-.', label='Naive - PRAUC: {}'.format(round(PRAUC_naive_val ,2)), color = "blue")
 axs[1].set_ylabel('Recall')
-axs[1].set_xlabel('Precission')
+axs[1].set_xlabel('Precision')
 ###axs[1].set_title('Precision-Recall')
 axs[1].legend(fontsize=8)
 plt.tight_layout()
@@ -433,24 +433,24 @@ auc_high = roc_auc_score(labels_val, ns_probs)
 #with plt.style.context('science'):
 fig, axs = plt.subplots( 2, dpi = 1200, figsize=(4, 6))
 #with plt.style.context('science'):
-axs[0].plot(lr_fpr_log_only_meta, lr_tpr_log_only_meta, '--+', markersize=2, label='Log. reg. (only meta) - AUC: {}'.format(round(auc_log_only_meta,2)), color = "black")
-axs[0].plot(lr_fpr_log_meta, lr_tpr_log_meta, '--+', markersize=2, label='Log. reg. - AUC: {}'.format(round(auc_log_meta,2)), color = "red")
-axs[0].plot(lr_fpr_ada_meta, lr_tpr_ada_meta, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada_meta,2)), color = "green")
-axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Naive - AUC: {}'.format(round(auc_high,2)), color = "blue")
+axs[0].plot(lr_fpr_log_only_meta, lr_tpr_log_only_meta, '--+', markersize=2, label='Log. reg. (only meta) - ROC-AUC: {}'.format(round(auc_log_only_meta,2)), color = "black")
+axs[0].plot(lr_fpr_log_meta, lr_tpr_log_meta, '--+', markersize=2, label='Log. reg. - ROC-AUC: {}'.format(round(auc_log_meta,2)), color = "red")
+axs[0].plot(lr_fpr_ada_meta, lr_tpr_ada_meta, '--v', markersize=2, label='Adaboost - ROC-AUC: {}'.format(round(auc_ada_meta,2)), color = "green")
+axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Naive - ROC-AUC: {}'.format(round(auc_high,2)), color = "blue")
 axs[0].set_xlabel('False Positive Rate')
 axs[0].set_ylabel('True Positive Rate')
 #axs[0].set_title('ROC and PR with meta data')
 axs[0].legend(fontsize=8)
 
-axs[1].plot(lr_precision_log_only_meta, lr_recall_log_only_meta, '--+', markersize=2, label='Log. reg. (only meta) - APR: {}'.format(round(apr_log_only_meta,2)), color = "black")
-axs[1].plot(lr_precision_log_meta, lr_recall_log_meta, '--+', markersize=2, label='Log. reg. - APR: {}'.format(round(apr_log_meta,2)), color = "red")
-axs[1].plot(lr_precision_ada_meta, lr_recall_ada_meta, '--v', markersize=2, label='Adaboost - APR: {}'.format(round(apr_ada_meta,2)), color = "green")
+axs[1].plot(lr_precision_log_only_meta, lr_recall_log_only_meta, '--+', markersize=2, label='Log. reg. (only meta) - PRAUC: {}'.format(round(PRAUC_log_only_meta,2)), color = "black")
+axs[1].plot(lr_precision_log_meta, lr_recall_log_meta, '--+', markersize=2, label='Log. reg. - PRAUC: {}'.format(round(PRAUC_log_meta,2)), color = "red")
+axs[1].plot(lr_precision_ada_meta, lr_recall_ada_meta, '--v', markersize=2, label='Adaboost - PRAUC: {}'.format(round(PRAUC_ada_meta,2)), color = "green")
 
 random = no_skill = len([t for t in labels_val if t ==1]) / len(labels_val)
 #pr_rand, recall_rand, _ = precision_recall_curve(labels_val, ns_probs)
-axs[1].plot([0,1], [random,random], linestyle='-.', label='Naive - APR: {}'.format(round(apr_naive_val,2)), color = "blue")
+axs[1].plot([0,1], [random,random], linestyle='-.', label='Naive - PRAUC: {}'.format(round(PRAUC_naive_val,2)), color = "blue")
 axs[1].set_ylabel('Recall')
-axs[1].set_xlabel('Precission')
+axs[1].set_xlabel('Precision')
 #axs[1].set_title('Precision-Recall with meta data')
 
 axs[1].legend(fontsize=8)
@@ -466,23 +466,23 @@ auc_high = roc_auc_score(test_labels, ns_probs)
 #with plt.style.context('science'):
 fig, axs = plt.subplots( 2, dpi = 1200, figsize=(4, 6))
 #with plt.style.context('science'):
-axs[0].plot(lr_fpr_log_test, lr_tpr_log_test, '--+', markersize=2, label='Log. reg. - AUC: {}'.format(round(auc_log_test,2)), color = "red")
-axs[0].plot(lr_fpr_ada_test, lr_tpr_ada_test, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada_test,2)), color = "green")
-axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Naive - AUC: {}'.format(round(auc_high,2)), color = "blue")
+axs[0].plot(lr_fpr_log_test, lr_tpr_log_test, '--+', markersize=2, label='Log. reg. - ROC-AUC: {}'.format(round(auc_log_test,2)), color = "red")
+axs[0].plot(lr_fpr_ada_test, lr_tpr_ada_test, '--v', markersize=2, label='Adaboost - ROC-AUC: {}'.format(round(auc_ada_test,2)), color = "green")
+axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Naive - ROC-AUC: {}'.format(round(auc_high,2)), color = "blue")
 axs[0].set_xlabel('False Positive Rate')
 axs[0].set_ylabel('True Positive Rate')
 #axs[0].set_title('ROC and PR')
 
 axs[0].legend(fontsize=8)
 
-axs[1].plot(lr_precision_log_test, lr_recall_log_test, '--+', markersize=2, label='Log. reg. - APR: {}'.format(round(apr_log_test,2)), color = "red")
-axs[1].plot(lr_precision_ada_test, lr_recall_ada_test, '--v', markersize=2, label='Adaboost - APR: {}'.format(round(apr_ada_test,2)), color = "green")
+axs[1].plot(lr_precision_log_test, lr_recall_log_test, '--+', markersize=2, label='Log. reg. - PRAUC: {}'.format(round(PRAUC_log_test,2)), color = "red")
+axs[1].plot(lr_precision_ada_test, lr_recall_ada_test, '--v', markersize=2, label='Adaboost - PRAUC: {}'.format(round(PRAUC_ada_test,2)), color = "green")
 
 random = no_skill = len([t for t in labels_val if t ==1]) / len(labels_val)
 #pr_rand, recall_rand, _ = precision_recall_curve(labels_val, ns_probs)
-axs[1].plot([0,1], [random,random], linestyle='-.', label='Naive - APR: {}'.format(round(apr_naive_test,2)), color = "blue")
+axs[1].plot([0,1], [random,random], linestyle='-.', label='Naive - PRAUC: {}'.format(round(PRAUC_naive_test,2)), color = "blue")
 axs[1].set_ylabel('Recall')
-axs[1].set_xlabel('Precission')
+axs[1].set_xlabel('Precision')
 ###axs[1].set_title('Precision-Recall')
 axs[1].legend(fontsize=8)
 plt.tight_layout()
@@ -492,24 +492,24 @@ plt.savefig(plot_path + 'baseline_test_metrics.pdf', format='pdf')
 #with plt.style.context('science'): 
 fig, axs = plt.subplots( 2, dpi = 1200, figsize=(4, 6)) 
 #with plt.style.context('science'):
-axs[0].plot(lr_fpr_log_only_meta_test, lr_tpr_log_only_meta_test, '--+', markersize=2, label='Log. reg. (only meta) - AUC: {}'.format(round(auc_log_only_meta_test,2)), color = "black")
-axs[0].plot(lr_fpr_log_meta_test, lr_tpr_log_meta_test, '--+', markersize=2, label='Log. reg. - AUC: {}'.format(round(auc_log_meta_test,2)), color = "red")
-axs[0].plot(lr_fpr_ada_meta_test, lr_tpr_ada_meta_test, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada_meta_test,2)), color = "green")
-axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Naive - AUC: {}'.format(round(auc_high,2)), color = "blue")
+axs[0].plot(lr_fpr_log_only_meta_test, lr_tpr_log_only_meta_test, '--+', markersize=2, label='Log. reg. (only meta) - ROC-AUC: {}'.format(round(auc_log_only_meta_test,2)), color = "black")
+axs[0].plot(lr_fpr_log_meta_test, lr_tpr_log_meta_test, '--+', markersize=2, label='Log. reg. - ROC-AUC: {}'.format(round(auc_log_meta_test,2)), color = "red")
+axs[0].plot(lr_fpr_ada_meta_test, lr_tpr_ada_meta_test, '--v', markersize=2, label='Adaboost - ROC-AUC: {}'.format(round(auc_ada_meta_test,2)), color = "green")
+axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Naive - ROC-AUC: {}'.format(round(auc_high,2)), color = "blue")
 axs[0].set_xlabel('False Positive Rate')
 axs[0].set_ylabel('True Positive Rate')
 #axs[0].set_title('ROC and PR with meta data')
 axs[0].legend(fontsize=8)
 
-axs[1].plot(lr_precision_log_only_meta_test, lr_recall_log_only_meta_test, '--+', markersize=2, label='Log. reg. (only meta) - APR: {}'.format(round(apr_log_only_meta_test,2)), color = "black")
-axs[1].plot(lr_precision_log_meta_test, lr_recall_log_meta_test, '--+', markersize=2, label='Log. reg. - APR: {}'.format(round(apr_log_meta_test,2)), color = "red")
-axs[1].plot(lr_precision_ada_meta_test, lr_recall_ada_meta_test, '--v', markersize=2, label='Adaboost - APR: {}'.format(round(apr_ada_meta_test,2)), color = "green")
+axs[1].plot(lr_precision_log_only_meta_test, lr_recall_log_only_meta_test, '--+', markersize=2, label='Log. reg. (only meta) - PRAUC: {}'.format(round(PRAUC_log_only_meta_test,2)), color = "black")
+axs[1].plot(lr_precision_log_meta_test, lr_recall_log_meta_test, '--+', markersize=2, label='Log. reg. - PRAUC: {}'.format(round(PRAUC_log_meta_test,2)), color = "red")
+axs[1].plot(lr_precision_ada_meta_test, lr_recall_ada_meta_test, '--v', markersize=2, label='Adaboost - PRAUC: {}'.format(round(PRAUC_ada_meta_test,2)), color = "green")
 
 random = no_skill = len([t for t in labels_val if t ==1]) / len(labels_val)
 #pr_rand, recall_rand, _ = precision_recall_curve(labels_val, ns_probs)
-axs[1].plot([0,1], [random,random], linestyle='-.', label='Naive - APR: {}'.format(round(apr_naive_test,2)), color = "blue")
+axs[1].plot([0,1], [random,random], linestyle='-.', label='Naive - PRAUC: {}'.format(round(PRAUC_naive_test,2)), color = "blue")
 axs[1].set_ylabel('Recall')
-axs[1].set_xlabel('Precission')
+axs[1].set_xlabel('Precision')
 ##axs[1].set_title('Precision-Recall with meta data')
 
 
@@ -536,9 +536,16 @@ for key in keys:
            label = key.replace("_"," ") + " loss : {}".format(round(df[key]['train_loss'].values[-1],2)))
   i += 1
 #plt.title("Train Loss over epochs")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
 plt.legend(fontsize=8)
 plt.tight_layout()
 plt.savefig(plot_path + 'train_losses.pdf', format='pdf')
+
+
+for key in keys:
+    print(key, " & " ,len(df[key]['train_loss']))
+    
 
 ######################################################## import predictions and do metrics and plots
 
@@ -568,31 +575,31 @@ markers = ['-+','-*','-^']
 #with plt.style.context('science'):
 fig, axs = plt.subplots(2, dpi = 1200, figsize=(4, 6)) 
 #with plt.style.context('science'):
-axs[0].plot(lr_fpr_log, lr_tpr_log, '--+', markersize=2, label='Log. reg. - AUC: {}'.format(round(auc_log,2)), color = "red")
-axs[1].plot(lr_precision_log, lr_recall_log, '--+', markersize=2, label='Log. reg. - APR: {}'.format(round(apr_log,2)), color = "red")
+axs[0].plot(lr_fpr_log, lr_tpr_log, '--+', markersize=2, label='Log. reg. - ROC-AUC: {}'.format(round(auc_log,2)), color = "red")
+axs[1].plot(lr_precision_log, lr_recall_log, '--+', markersize=2, label='Log. reg. - PRAUC: {}'.format(round(PRAUC_log,2)), color = "red")
 
 i = 0
 for m in results.keys():
     if 'meta' not in m:
         auc = roc_auc_score(results[m]['val']['targs'],results[m]['val']['preds'])
-        apr = average_precision_score(results[m]['val']['targs'],results[m]['val']['preds'])
+        PRAUC = average_precision_score(results[m]['val']['targs'],results[m]['val']['preds'])
         
         lab = m.split(".")[0].replace("_"," ")
         
-        axs[0].plot(results[m]['val']['fpr'], results[m]['val']['tpr'], markers[i], markersize=3, label= lab + '- AUC: {}'.format(round(auc,2)))
-        axs[1].plot(results[m]['val']['pr'], results[m]['val']['recal'], markers[i], markersize=3, label= lab + '- APR: {}'.format(round(apr,2)))
+        axs[0].plot(results[m]['val']['fpr'], results[m]['val']['tpr'], markers[i], markersize=3, label= lab + '- ROC-AUC: {}'.format(round(auc,2)))
+        axs[1].plot(results[m]['val']['pr'], results[m]['val']['recal'], markers[i], markersize=3, label= lab + '- PRAUC: {}'.format(round(PRAUC,2)))
         i+= 1
     
     #axs[1].plot(lr_precision_ada, lr_recall_ada, '--v', markersize=2, label='Adaboost', color = "green")
-#axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada,2)), color = "green")
-#axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - AUC: {}'.format(round(auc_high,2)), color = "blue")
+#axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - ROC-AUC: {}'.format(round(auc_ada,2)), color = "green")
+#axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - ROC-AUC: {}'.format(round(auc_high,2)), color = "blue")
 axs[0].set_xlabel('False Positive Rate')
 axs[0].set_ylabel('True Positive Rate')
 #axs[0].set_title('ROC and PR')
 
 axs[0].legend(fontsize=8)
 axs[1].set_ylabel('Recall')
-axs[1].set_xlabel('Precission')
+axs[1].set_xlabel('Precision')
 ###axs[1].set_title('Precision-Recall')
 axs[1].legend(fontsize=8)
 plt.tight_layout()
@@ -602,29 +609,29 @@ plt.savefig(plot_path + 'trained_metrics.pdf', format='pdf')
 
 fig, axs = plt.subplots( 2, dpi = 1200, figsize=(4, 6)) 
 #with plt.style.context('science'):
-axs[0].plot(lr_fpr_log_meta, lr_tpr_log_meta, '--+', markersize=2, label='Log. reg. - AUC: {}'.format(round(auc_log,2)), color = "red")
-axs[1].plot(lr_precision_log_meta, lr_recall_log_meta, '--+', markersize=2, label='Log. reg. - APR: {}'.format(round(apr_log_meta,2)), color = "red")
+axs[0].plot(lr_fpr_log_meta, lr_tpr_log_meta, '--+', markersize=2, label='Log. reg. - ROC-AUC: {}'.format(round(auc_log,2)), color = "red")
+axs[1].plot(lr_precision_log_meta, lr_recall_log_meta, '--+', markersize=2, label='Log. reg. - PRAUC: {}'.format(round(PRAUC_log_meta,2)), color = "red")
 
 i = 0
 for m in results.keys():
     if 'meta' in m:
         auc = roc_auc_score(results[m]['val']['targs'],results[m]['val']['preds'])
-        apr = average_precision_score(results[m]['val']['targs'],results[m]['val']['preds'])
+        PRAUC = average_precision_score(results[m]['val']['targs'],results[m]['val']['preds'])
 
         lab = m.split(".")[0].replace("_"," ")        
 
-        axs[0].plot(results[m]['val']['fpr'], results[m]['val']['tpr'], markers[i], markersize=3, label= lab + ' - AUC: {}'.format(round(auc,2)))
-        axs[1].plot(results[m]['val']['pr'], results[m]['val']['recal'], markers[i], markersize=3, label= lab + ' - APR: {}'.format(round(apr,2)))    
+        axs[0].plot(results[m]['val']['fpr'], results[m]['val']['tpr'], markers[i], markersize=3, label= lab + ' - ROC-AUC: {}'.format(round(auc,2)))
+        axs[1].plot(results[m]['val']['pr'], results[m]['val']['recal'], markers[i], markersize=3, label= lab + ' - PRAUC: {}'.format(round(PRAUC,2)))    
         i +=1
     #axs[1].plot(lr_precision_ada, lr_recall_ada, '--v', markersize=2, label='Adaboost', color = "green")
-#axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada,2)), color = "green")
-#axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - AUC: {}'.format(round(auc_high,2)), color = "blue")
+#axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - ROC-AUC: {}'.format(round(auc_ada,2)), color = "green")
+#axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - ROC-AUC: {}'.format(round(auc_high,2)), color = "blue")
 axs[0].set_xlabel('False Positive Rate')
 axs[0].set_ylabel('True Positive Rate')
 #axs[0].set_title('ROC and PR with meta data')
 axs[0].legend(fontsize=8)
 axs[1].set_ylabel('Recall')
-axs[1].set_xlabel('Precission')
+axs[1].set_xlabel('Precision')
 #axs[1].set_title('Precision-Recall with meta data')
 
 axs[1].legend(fontsize=8)
@@ -639,31 +646,31 @@ markers = ['-+','-*','-^']
 #with plt.style.context('science'):
 fig, axs = plt.subplots( 2, dpi = 1200, figsize=(4, 6)) 
 #with plt.style.context('science'):
-axs[0].plot(lr_fpr_log_test, lr_tpr_log_test, '--+', markersize=2, label='Log. reg. - AUC: {}'.format(round(auc_log_test,2)), color = "red")
-axs[1].plot(lr_precision_log_test, lr_recall_log_test, '--+', markersize=2, label='Log. reg. - APR: {}'.format(round(apr_log_test,2)), color = "red")
+axs[0].plot(lr_fpr_log_test, lr_tpr_log_test, '--+', markersize=2, label='Log. reg. - ROC-AUC: {}'.format(round(auc_log_test,2)), color = "red")
+axs[1].plot(lr_precision_log_test, lr_recall_log_test, '--+', markersize=2, label='Log. reg. - PRAUC: {}'.format(round(PRAUC_log_test,2)), color = "red")
 
 i = 0
 for m in results.keys():
     if 'meta' not in m:
         auc = roc_auc_score(results[m]['test']['targs'],results[m]['test']['preds'])
-        apr = average_precision_score(results[m]['test']['targs'],results[m]['test']['preds'])
+        PRAUC = average_precision_score(results[m]['test']['targs'],results[m]['test']['preds'])
 
         lab = m.split(".")[0].replace("_"," ")        
 
-        axs[0].plot(results[m]['test']['fpr'], results[m]['test']['tpr'], markers[i], markersize=3, label= lab + ' - AUC: {}'.format(round(auc,2)))
-        axs[1].plot(results[m]['test']['pr'], results[m]['test']['recal'], markers[i], markersize=3, label= lab+ ' - APR: {}'.format(round(apr,2)))
+        axs[0].plot(results[m]['test']['fpr'], results[m]['test']['tpr'], markers[i], markersize=3, label= lab + ' - ROC-AUC: {}'.format(round(auc,2)))
+        axs[1].plot(results[m]['test']['pr'], results[m]['test']['recal'], markers[i], markersize=3, label= lab+ ' - PRAUC: {}'.format(round(PRAUC,2)))
         i+= 1
     
     #axs[1].plot(lr_precision_ada, lr_recall_ada, '--v', markersize=2, label='Adaboost', color = "green")
-#axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada,2)), color = "green")
-#axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - AUC: {}'.format(round(auc_high,2)), color = "blue")
+#axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - ROC-AUC: {}'.format(round(auc_ada,2)), color = "green")
+#axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - ROC-AUC: {}'.format(round(auc_high,2)), color = "blue")
 axs[0].set_xlabel('False Positive Rate')
 axs[0].set_ylabel('True Positive Rate')
 #axs[0].set_title('ROC and PR')
 
 axs[0].legend(fontsize=8)
 axs[1].set_ylabel('Recall')
-axs[1].set_xlabel('Precission')
+axs[1].set_xlabel('Precision')
 ####axs[1].set_title('Precision-Recall')
 axs[1].legend(fontsize=8)
 plt.tight_layout()
@@ -673,30 +680,30 @@ plt.savefig(plot_path + 'trained_test_metrics.pdf', format='pdf')
 
 fig, axs = plt.subplots( 2, dpi = 1200, figsize=(4, 6)) 
 #with plt.style.context('science'):
-axs[0].plot(lr_fpr_log_meta_test, lr_tpr_log_meta_test, '--+', markersize=2, label='Log. reg. - AUC: {}'.format(round(auc_log_meta_test,2)), color = "red")
-axs[1].plot(lr_precision_log_meta_test, lr_recall_log_meta_test, '--+', markersize=2, label = 'Log. reg. - APR: {}'.format(round(apr_log_meta_test,2)), color = "red")
+axs[0].plot(lr_fpr_log_meta_test, lr_tpr_log_meta_test, '--+', markersize=2, label='Log. reg. - ROC-AUC: {}'.format(round(auc_log_meta_test,2)), color = "red")
+axs[1].plot(lr_precision_log_meta_test, lr_recall_log_meta_test, '--+', markersize=2, label = 'Log. reg. - PRAUC: {}'.format(round(PRAUC_log_meta_test,2)), color = "red")
 
 i = 0
 for m in results.keys():
     if 'meta' in m:
         auc = roc_auc_score(results[m]['test']['targs'],results[m]['test']['preds'])
-        apr = average_precision_score(results[m]['test']['targs'],results[m]['test']['preds'])
+        PRAUC = average_precision_score(results[m]['test']['targs'],results[m]['test']['preds'])
         
         lab = m.split(".")[0].replace("_"," ")        
 
         
-        axs[0].plot(results[m]['test']['fpr'], results[m]['test']['tpr'], markers[i], markersize=3, label= lab + ' - AUC: {}'.format(round(auc,2)))
-        axs[1].plot(results[m]['test']['pr'], results[m]['test']['recal'], markers[i], markersize=3, label=  lab + ' - APR: {}'.format(round(apr,2)))    
+        axs[0].plot(results[m]['test']['fpr'], results[m]['test']['tpr'], markers[i], markersize=3, label= lab + ' - ROC-AUC: {}'.format(round(auc,2)))
+        axs[1].plot(results[m]['test']['pr'], results[m]['test']['recal'], markers[i], markersize=3, label=  lab + ' - PRAUC: {}'.format(round(PRAUC,2)))    
         i +=1
     #axs[1].plot(lr_precision_ada, lr_recall_ada, '--v', markersize=2, label='Adaboost', color = "green")
-#axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada,2)), color = "green")
-#axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - AUC: {}'.format(round(auc_high,2)), color = "blue")
+#axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - ROC-AUC: {}'.format(round(auc_ada,2)), color = "green")
+#axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - ROC-AUC: {}'.format(round(auc_high,2)), color = "blue")
 axs[0].set_xlabel('False Positive Rate')
 axs[0].set_ylabel('True Positive Rate')
 #axs[0].set_title('ROC and PR with meta data')
 axs[0].legend(fontsize=8)
 axs[1].set_ylabel('Recall')
-axs[1].set_xlabel('Precission')
+axs[1].set_xlabel('Precision')
 #axs[1].set_title('Precision-Recall with meta data')
 
 axs[1].legend(fontsize=8)
@@ -711,7 +718,7 @@ plt.savefig(plot_path + 'trained_meta_test_metrics.pdf', format='pdf')
 
 fig, axs = plt.subplots( 2, dpi = 1200, figsize=(4, 6)) 
 #with plt.style.context('science'):
-#axs[0].plot(lr_fpr_log_meta_test, lr_tpr_log_meta_test, '--+', markersize=2, label='Logistic regression - AUC: {}'.format(round(auc_log_meta_test,2)), color = "red")
+#axs[0].plot(lr_fpr_log_meta_test, lr_tpr_log_meta_test, '--+', markersize=2, label='Logistic regression - ROC-AUC: {}'.format(round(auc_log_meta_test,2)), color = "red")
 #axs[1].plot(lr_precision_log_meta_test, lr_recall_log_meta_test, '--+', markersize=2, label='Logistic regression', color = "red")
 
 lab_val = ["CNN meta val","CNN val"]
@@ -723,28 +730,28 @@ for m in results.keys():
             auc_val = roc_auc_score(results[m]['val']['targs'],results[m]['val']['preds'])
             auc_test = roc_auc_score(results[m]['test']['targs'],results[m]['test']['preds'])
 
-            axs[0].plot(results[m]['test']['fpr'], results[m]['test']['tpr'], '--',color = "black", markersize=5, label= 'CNN meta test- AUC: {}'.format(round(auc_test,2)))
+            axs[0].plot(results[m]['test']['fpr'], results[m]['test']['tpr'], '--',color = "black", markersize=5, label= 'CNN meta test- ROC-AUC: {}'.format(round(auc_test,2)))
             axs[1].plot(results[m]['test']['pr'], results[m]['test']['recal'], '-', color = "black", markersize=2, label= 'CNN meta test')    
-            axs[0].plot(results[m]['val']['fpr'], results[m]['val']['tpr'], '--*', color = "black", markersize=5, label= 'CNN meta val- AUC: {}'.format(round(auc_val,2)))
+            axs[0].plot(results[m]['val']['fpr'], results[m]['val']['tpr'], '--*', color = "black", markersize=5, label= 'CNN meta val- ROC-AUC: {}'.format(round(auc_val,2)))
             axs[1].plot(results[m]['val']['pr'], results[m]['val']['recal'], '--', color = "black", markersize=2, label= 'CNN meta val')  
         else:
             auc_val = roc_auc_score(results[m]['val']['targs'],results[m]['val']['preds'])
             auc_test = roc_auc_score(results[m]['test']['targs'],results[m]['test']['preds'])
     
-            axs[0].plot(results[m]['test']['fpr'], results[m]['test']['tpr'], '--',color = "red", markersize=5, label= 'CNN test- AUC: {}'.format(round(auc_test,2)))
+            axs[0].plot(results[m]['test']['fpr'], results[m]['test']['tpr'], '--',color = "red", markersize=5, label= 'CNN test- ROC-AUC: {}'.format(round(auc_test,2)))
             axs[1].plot(results[m]['test']['pr'], results[m]['test']['recal'], '-', color = "red", markersize=2, label= 'CNN test')    
-            axs[0].plot(results[m]['val']['fpr'], results[m]['val']['tpr'], '--*', color = "red", markersize=5, label= 'CNN val- AUC: {}'.format(round(auc_val,2)))
+            axs[0].plot(results[m]['val']['fpr'], results[m]['val']['tpr'], '--*', color = "red", markersize=5, label= 'CNN val- ROC-AUC: {}'.format(round(auc_val,2)))
             axs[1].plot(results[m]['val']['pr'], results[m]['val']['recal'], '--', color = "red", markersize=2, label= 'CNN val')  
     #axs[1].plot(lr_precision_ada, lr_recall_ada, '--v', markersize=2, label='Adaboost', color = "green")
-#axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - AUC: {}'.format(round(auc_ada,2)), color = "green")
-#axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - AUC: {}'.format(round(auc_high,2)), color = "blue")
+#axs[0].plot(lr_fpr_ada, lr_tpr_ada, '--v', markersize=2, label='Adaboost - ROC-AUC: {}'.format(round(auc_ada,2)), color = "green")
+#axs[0].plot(ns_fpr, ns_tpr, linestyle='-.', label='Random Classifier - ROC-AUC: {}'.format(round(auc_high,2)), color = "blue")
 axs[0].set_xlabel('False Positive Rate')
 axs[0].set_ylabel('True Positive Rate')
 #axs[0].set_title('ROC and PR')
 
 axs[0].legend(fontsize=8)
 axs[1].set_ylabel('Recall')
-axs[1].set_xlabel('Precission')
+axs[1].set_xlabel('Precision')
 ##axs[1].set_title('Precision-Recall')
 axs[1].legend(fontsize=8)
 plt.tight_layout()
@@ -781,7 +788,7 @@ with open("plots_tables\\paper_baseline_models.tex", 'w') as f:
     f.write(paper_base.to_latex(index = True))
         
 paper_results = dat.loc[['FNN Test','FNN_meta Test','FNN_avg Test','FNN_avg_meta Test','CNN Test','CNN_meta Test'], 
-                        ['AUC',"Avg. pr","Recall","F1"]]
+                        ['ROC-AUC',"PRAUC","Recall","F1"]]
 
 with open("plots_tables\\paper_trained_models.tex", 'w') as f:
     f.write(paper_results.to_latex(index = True))

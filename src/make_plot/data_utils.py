@@ -102,7 +102,7 @@ def tex_table(labels_val, val_preds, test_labels, test_preds, name = None, path 
          cat2 : test}
     tab = pd.DataFrame(d)
     tab = tab.T
-    tab.columns = ["Acc.","F1","Pr,","Recall","AUC","Avg. pr"]
+    tab.columns = ["Acc.","F1","Pr,","Recall","ROC-AUC","PRAUC"]
     
     if path == None:
         print("No name provided - saved as table.tex to dir")
